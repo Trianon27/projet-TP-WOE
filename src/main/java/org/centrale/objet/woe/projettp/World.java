@@ -3,6 +3,8 @@ package org.centrale.objet.woe.projettp;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
+import java.util.LinkedList;
+import java.util.ArrayList;
 
 /**
  * Représente le monde du jeu WoE avec ses personnages et leurs positions.
@@ -83,11 +85,38 @@ public class World {
     public void creerMondeAlea() {
         Random rand = new Random();
         positionsOccupees.clear(); // on vide au cas où
-
+        
         robin.setPos(positionAleatoire(rand));
         peon.setPos(positionAleatoire(rand));
         bugs.setPos(positionAleatoire(rand));
         guillaumeT.setPos(positionAleatoire(rand));
+        
+        
+        LinkedList<Creature> ListCreature = new LinkedList<>();
+        LinkedList<Objet> ListObjet = new LinkedList<>();
+        
+        
+        for(int i = 0; i < 10; i++){
+            Random RandomGen = new Random();
+            Point2D cPoint = positionAleatoire(RandomGen);
+            int randint = RandomGen.nextInt(2);
+            switch (randint){
+            case 0 -> {
+                ListCreature.add(GenerationP(i, cPoint));
+            }
+            case 1 -> {
+                ListCreature.add(GenerationM(i, cPoint));
+            }
+            default -> {
+            }
+        }}
+        for (int i = 0; i < 10; i++) { // 100 créatures aléatoires
+            Random randomGen = new Random();
+            Point2D cPoint = positionAleatoire(randomGen);
+            ListObjet.add(GenerationO(i, cPoint));
+            }
+        afficheListes(ListCreature,ListObjet);
+
     }
 
     /**
@@ -150,4 +179,99 @@ public class World {
         System.out.println("===============");
         System.out.println();
     }
+    
+    
+    
+    /*----------------------------------*/
+    
+    
+    private Personnage GenerationP(int id, Point2D p){
+        Random RandomGen = new Random();
+        int randint = RandomGen.nextInt(3);
+        switch (randint){
+            case 0 -> {
+                return new Archer("Archer"+id, true, 100, 80, 20, 80, 50, p, 2, 5, 10);
+            }
+            case 1 -> {
+                return new Paysan("paysan"+id, true, 100, 100, 100, 100, 100, 100, p, 5);
+            }
+            case 2 -> {
+                return new Guerrier("Guerrier"+id, true, 100, 80, 20, 80, 50, p, 1, 3); 
+            }
+            default -> {
+                return null;
+            }
+        }
+    }
+        /**
+     * Génère un monstre aléatoire (Lapin ou Loup).
+     *
+     * @param id identifiant du monstre
+     * @param p position dans le monde
+     * @return un monstre de type Lapin ou Loup
+     */
+    private Monstre GenerationM(int id, Point2D p) {
+        Random rand = new Random();
+        int randint = rand.nextInt(2); // 0 ou 1
+        switch (randint) {
+            case 0 -> {
+                return new Lapin("Lapin" + id, true, 50, 20, 5, 10, 10, p, 1, 2, Monstre.Dangerosite.DOCILE);
+            }
+            case 1 -> {
+                return new Loup("Loup" + id, true, 80, 30, 15, 20, 30, p, 2, 4, Monstre.Dangerosite.DANGEREUX);
+            }
+            default -> {
+                return null;
+            }
+        }
+    }
+
+    /**
+     * Génère un objet aléatoire (PotionSoin ou Épée).
+     *
+     * @param id identifiant de l'objet
+     * @param p position dans le monde
+     * @return un objet de type PotionSoin ou Epée
+     */
+    private Objet GenerationO(int id, Point2D p) {
+        Random rand = new Random();
+        int randint = rand.nextInt(2); // 0 ou 1
+        switch (randint) {
+            case 0 -> {
+                return new PotionSoin("Potion" + id, "Potion magique", p, 20);
+            }
+            case 1 -> {
+                return new Epee("Epee" + id, "Épée en acier", p, 15, Epee.Etat.NONE);
+            }
+            default -> {
+                return null;
+            }
+        }
+    }
+    
+    
+    /**
+    * Affiche toutes les créatures et objets présents dans le monde.
+    *
+    * @param creatures la liste de créatures
+    * @param objets la liste d'objets
+    */
+    public void afficheListes(LinkedList<Creature> creatures, LinkedList<Objet> objets) {
+        System.out.println("\n===== LISTE DES CREATURES =====");
+        for (Creature c : creatures) {
+            if (c != null) {
+                c.affiche();
+            }
+        }
+
+        System.out.println("\n===== LISTE DES OBJETS =====");
+        for (Objet o : objets) {
+            if (o != null) {
+                o.affiche();
+            }
+        }
+        System.out.println("=============================\n");
+    }
+
+
 }

@@ -110,8 +110,8 @@ public class TestWoE {
         w.potionV.affiche();
         w.grosBill.prendObjet(w.potionV, w.getPositionsOccupees());
         w.grosBill.affiche();*/
-        
-
+        World W= new World();
+        W.creerMondeAlea();
     }
 }
 
