@@ -7,34 +7,36 @@ package org.centrale.objet.woe.projettp;
 /**
  * La classe {@code Point2D} représente un point dans un plan à deux dimensions.
  * <p>
- * Chaque point possède des coordonnées x et y, peut être déplacé, affiché et calculer
- * la distance par rapport à un autre point.
+ * Chaque point possède des coordonnées x et y, peut être déplacé, affiché et
+ * calculer la distance par rapport à un autre point.
  * </p>
- * 
+ *
  * @author srodr
  */
 public class Point2D {
-    
-    /** Coordonnée x du point */
-    private int x;
-    
-    /** Coordonnée y du point */
-    private int y;
-    
-    // ================= CONSTRUCTEURS =================
 
     /**
-     * Constructeur par défaut.
-     * Initialise le point à l'origine (0,0).
+     * Coordonnée x du point
+     */
+    private int x;
+
+    /**
+     * Coordonnée y du point
+     */
+    private int y;
+
+    // ================= CONSTRUCTEURS =================
+    /**
+     * Constructeur par défaut. Initialise le point à l'origine (0,0).
      */
     public Point2D() {
         this.x = 0;
         this.y = 0;
     }
-    
+
     /**
      * Constructeur avec paramètres définis.
-     * 
+     *
      * @param x Coordonnée x
      * @param y Coordonnée y
      */
@@ -42,10 +44,10 @@ public class Point2D {
         this.x = x;
         this.y = y;
     }
-    
+
     /**
      * Constructeur de copie.
-     * 
+     *
      * @param p Point2D à copier
      */
     public Point2D(Point2D p) {
@@ -54,7 +56,6 @@ public class Point2D {
     }
 
     // ================= GETTERS ET SETTERS =================
-
     public int getX() {
         return x;
     }
@@ -73,7 +74,7 @@ public class Point2D {
 
     /**
      * Définit la position du point.
-     * 
+     *
      * @param x Nouvelle coordonnée x
      * @param y Nouvelle coordonnée y
      */
@@ -81,10 +82,10 @@ public class Point2D {
         this.x = x;
         this.y = y;
     }
-    
+
     /**
      * Déplace le point selon dx et dy.
-     * 
+     *
      * @param dx Déplacement horizontal
      * @param dy Déplacement vertical
      */
@@ -102,7 +103,7 @@ public class Point2D {
 
     /**
      * Calcule la distance entre ce point et un autre point donné.
-     * 
+     *
      * @param p Point de référence
      * @return Distance entre les deux points
      */
@@ -111,4 +112,36 @@ public class Point2D {
         float subDistY = (float) Math.pow((p.getY() - this.y), 2);
         return (float) Math.sqrt(subDistX + subDistY);
     }
+
+    // ================= MÉTHODES EQUALS ET HASHCODE =================
+    /**
+     * Compare ce point avec un autre objet pour déterminer l'égalité. Deux
+     * points sont égaux s'ils ont les mêmes coordonnées x et y.
+     *
+     * @param obj L'objet à comparer avec ce point
+     * @return true si les objets sont égaux, false sinon
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+        Point2D point2D = (Point2D) obj;
+        return x == point2D.x && y == point2D.y;
+    }
+
+    /**
+     * Calcule le code hash pour ce point. Cette méthode doit être cohérente
+     * avec la méthode equals().
+     *
+     * @return Le code hash du point
+     */
+    @Override
+    public int hashCode() {
+        return 31 * x + y;
+    }
+
 }

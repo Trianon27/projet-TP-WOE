@@ -1,26 +1,26 @@
 package org.centrale.objet.woe.projettp;
 
-import java.util.HashSet;
-import java.util.Random;
-import java.util.Set;
-import java.util.LinkedList;
-import java.util.ArrayList;
+import java.util.*;
 
 /**
- * Représente le monde du jeu WoE avec ses personnages et leurs positions.
- * Permet de créer un monde aléatoire, gérer les positions et afficher l'état du
- * monde.
- * <p>
- * Les personnages sont placés dans un monde 2D avec des positions uniques pour éviter
- * les superpositions.
- * </p>
+ * Représente le monde du jeu WoE avec ses personnages, créatures et objets.
+ *
+ * Cette classe permet de :
+ * <ul>
+ *   <li>Créer un monde aléatoire avec des positions uniques pour chaque entité.</li>
+ *   <li>Générer des personnages, monstres et objets aléatoirement.</li>
+ *   <li>Afficher l’état du monde et ses protagonistes.</li>
+ *   <li>Mesurer des temps d’exécution pour des calculs sur différentes collections Java.</li>
+ * </ul>
+ * 
+ * 
+ * <p>Les positions sont représentées dans un espace 2D borné.</p>
  * 
  * @author srodr
  */
 public class World {
 
     // ================= PERSONNAGES =================
-    
     /** Archer principal du monde */
     public Archer robin;
 
@@ -37,99 +37,190 @@ public class World {
     public Lapin bugs;
 
     /** Deuxième lapin */
-    public Lapin bugs2; 
+    public Lapin bugs2;
 
     /** Loup présent dans le monde */
-    public Loup wolfie; 
-    
-    /** */
-    public PotionSoin potionV; 
-         
+    public Loup wolfie;
+
+    /** Potion de soin présente dans le monde */
+    public PotionSoin potionV;
+
+    /** Taille (dimension maximale) du monde 2D */
+    public int TAILLE_MONDE;
 
     // ================= POSITIONS =================
-    
     /** Ensemble des positions occupées pour éviter les superpositions */
     private final Set<Point2D> positionsOccupees;
 
     // ================= CONSTRUCTEUR =================
-
     /**
      * Constructeur par défaut.
-     * Initialise les personnages avec des valeurs de base et initialise
-     * l'ensemble des positions occupées.
+     * Initialise les personnages principaux avec des valeurs de base
+     * et l’ensemble des positions occupées.
      */
     public World() {
         Point2D p = new Point2D(0, 0);
         robin = new Archer("Robin", true, 100, 80, 20, 80, 50, p, 2, 5, 10);
         guillaumeT = new Archer(robin);
         guillaumeT.setNom("GuillaumeT");
+
         Point2D p2 = new Point2D(1, 1);
-        grosBill = new Guerrier("grosBill", true, 100, 80, 20, 80, 50, p2, 1, 3); 
+        grosBill = new Guerrier("grosBill", true, 100, 80, 20, 80, 50, p2, 1, 3);
+
         peon = new Paysan("Paysan", true, 100, 100, 100, 100, 100, 100, p, 5);
+
         bugs = new Lapin("Lapin", true, 100, 100, 100, 100, 100, p, 1, 3, Monstre.Dangerosite.DOCILE);
         bugs2 = new Lapin(bugs);
+
         Point2D p3 = new Point2D(0, 1);
         wolfie = new Loup("Loup", true, 100, 10, 10, 50, 50, p3, 1, 3, Monstre.Dangerosite.DANGEREUX);
-        potionV = new PotionSoin("Potion de Vie","Potion tres fort",p3,20);
-        
+
+        potionV = new PotionSoin("Potion de Vie", "Potion tres forte", p3, 20);
+
         positionsOccupees = new HashSet<>();
+        TAILLE_MONDE = 50;
     }
 
     // ================= MÉTHODES =================
-
     /**
-     * Place les protagonistes aléatoirement dans le monde 2D.
-     * Hypothèse : coordonnées entières dans [0, 100].
-     * Les positions sont uniques et ne se superposent pas.
+     * Place aléatoirement les protagonistes du monde dans un espace 2D.
+     * <p>
+     * Les coordonnées sont des entiers dans [0, TAILLE_MONDE].
+     * Les positions générées sont uniques et ne se superposent pas.
+     * </p>
      */
     public void creerMondeAlea() {
         Random rand = new Random();
-        positionsOccupees.clear(); // on vide au cas où
-        
+        positionsOccupees.clear();
+
         robin.setPos(positionAleatoire(rand));
         peon.setPos(positionAleatoire(rand));
         bugs.setPos(positionAleatoire(rand));
         guillaumeT.setPos(positionAleatoire(rand));
-        
-        
-        LinkedList<Creature> ListCreature = new LinkedList<>();
-        LinkedList<Objet> ListObjet = new LinkedList<>();
-        
-        
-        for(int i = 0; i < 10; i++){
-            Random RandomGen = new Random();
-            Point2D cPoint = positionAleatoire(RandomGen);
-            int randint = RandomGen.nextInt(2);
-            switch (randint){
-            case 0 -> {
-                ListCreature.add(GenerationP(i, cPoint));
-            }
-            case 1 -> {
-                ListCreature.add(GenerationM(i, cPoint));
-            }
-            default -> {
-            }
-        }}
-        for (int i = 0; i < 10; i++) { // 100 créatures aléatoires
-            Random randomGen = new Random();
-            Point2D cPoint = positionAleatoire(randomGen);
-            ListObjet.add(GenerationO(i, cPoint));
-            }
-        afficheListes(ListCreature,ListObjet);
 
+        LinkedList<Creature> ListCreature = new LinkedList<>();
+        LinkedList<Objet> ListObjets = new LinkedList<>();
+
+        generationCreatures(100, rand, ListCreature);
+        generationObjets(20, rand, ListObjets);
+
+        afficheListes(ListCreature, ListObjets);
+        affichePointDeVieParTaille(ListCreature);
     }
 
     /**
-     * Génère une position unique non encore utilisée.
+     * Crée un laboratoire de test pour comparer les temps d’exécution
+     * entre différentes structures de données (List, Set, etc.).
+     * <p>
+     * On mesure le temps nécessaire pour calculer le total des points de vie
+     * d’un ensemble de créatures en utilisant deux méthodes :
+     * <ol>
+     *   <li>Basée sur la taille de la collection (accès indexé si List).</li>
+     *   <li>Basée sur les itérateurs Java.</li>
+     * </ol>
+     * </p>
      *
-     * @param rand Générateur de nombres aléatoires
-     * @return une position Point2D libre dans le monde
+     * @param collection collection utilisée pour stocker les créatures
+     * @param iteration
+     */
+    public void creationLabDeMondePourComparerDesTemps(Collection<Creature> collection, int iteration) {
+        Random rand = new Random();
+        System.out.println("=== Type de collection utilisee : " + collection.getClass().getSimpleName() + " ===");
+
+        this.TAILLE_MONDE = 1500;
+        int populationInitiale = 100;
+
+        System.out.println("""
+        Dans cet exercice, nous allons mesurer le temps necessaire pour calculer
+        le total des points de vie dun ensemble de personnages.
+        Le calcul sera effectue de deux manieres :
+          1. Base sur la taille de la collection.
+          2. En utilisant les iterateurs Java.
+        Pour cette experience, nous genererons un monde contenant jusqua un million
+        de personnages, en tenant compte egalement du nombre dobjets generes.
+        Les mesures seront realisees en millisecondes et en nanosecondes.
+        """);
+
+        for (int i = 0; i < iteration; i++) {
+            collection.clear();
+            long startNs, startMs, endMs, endNs; 
+
+            System.out.println();
+            System.out.println("=== Population actuelle : " + populationInitiale + " personnages ===\n");
+
+            generationCreatures(populationInitiale, rand, collection);
+
+            if (collection instanceof List) {
+                // Calcul par taille de collection
+                System.out.println("--- Calcul du total des points de vie (methode par taille) ---");
+                startNs = System.nanoTime();
+                startMs = System.currentTimeMillis();
+                affichePointDeVieParTaille((List<Creature>) collection);
+                endMs = System.currentTimeMillis();
+                endNs = System.nanoTime();
+                System.out.println("Temps dexecution : " + (endMs - startMs) + " millisecondes\n");
+                System.out.println("Temps dexecution : " + (endNs - startNs) + " nanosecondes\n");
+            }
+
+            // Calcul par itérateurs
+            System.out.println("--- Calcul du total des points de vie (methode par iterateurs) ---");
+            startNs = System.nanoTime();
+            startMs = System.currentTimeMillis();
+            affichePointDeVieParIterateurs(collection);
+            endMs = System.currentTimeMillis();
+            endNs = System.nanoTime();
+            System.out.println("Temps dexecution : " + (endMs - startMs) + " millisecondes\n");
+            System.out.println("Temps dexecution : " + (endNs - startNs) + " nanosecondes\n");
+
+            populationInitiale *= 10; // Augmentation exponentielle
+        }
+    }
+
+    /**
+     * Génère un ensemble de créatures aléatoires et les ajoute à une collection.
+     *
+     * @param maxCreatures nombre maximum de créatures à générer
+     * @param rand générateur de nombres aléatoires
+     * @param collectionCreature collection où ajouter les créatures
+     */
+    private void generationCreatures(int maxCreatures, Random rand, Collection<Creature> collectionCreature) {
+        for (int i = 0; i < maxCreatures; i++) {
+            Point2D cPoint = positionAleatoire(rand);
+            int randint = rand.nextInt(2);
+            int id = i + 1;
+            switch (randint) {
+                case 0 -> collectionCreature.add(GenerationP(id, cPoint));
+                case 1 -> collectionCreature.add(GenerationM(id, cPoint));
+            }
+        }
+    }
+
+    /**
+     * Génère un ensemble d’objets aléatoires et les ajoute à une collection.
+     *
+     * @param maxObjets nombre maximum d’objets à générer
+     * @param rand générateur de nombres aléatoires
+     * @param collectionObjet collection où ajouter les objets
+     */
+    private void generationObjets(int maxObjets, Random rand, Collection<Objet> collectionObjet) {
+        for (int i = 0; i < maxObjets; i++) {
+            int id = i + 1;
+            Point2D cPoint = positionAleatoire(rand);
+            collectionObjet.add(GenerationO(id, cPoint));
+        }
+    }
+
+    /**
+     * Génère une position libre non encore occupée.
+     *
+     * @param rand générateur aléatoire
+     * @return une position Point2D unique dans le monde
      */
     private Point2D positionAleatoire(Random rand) {
         Point2D p;
         do {
-            int x = rand.nextInt(101); // entre 0 et 100
-            int y = rand.nextInt(101);
+            int x = rand.nextInt(TAILLE_MONDE);
+            int y = rand.nextInt(TAILLE_MONDE);
             p = new Point2D(x, y);
         } while (positionsOccupees.contains(p));
         positionsOccupees.add(p);
@@ -137,10 +228,10 @@ public class World {
     }
 
     /**
-     * Effectue un tour de jour pour tous les protagonistes.
-     * Chaque personnage se déplace de manière aléatoire.
+     * Effectue une simulation de plusieurs tours : à chaque tour,
+     * tous les personnages se déplacent aléatoirement.
      *
-     * @param nbTours Nombre de tours à effectuer
+     * @param nbTours nombre de tours à exécuter
      */
     public void tourDeJour(int nbTours) {
         for (int t = 0; t < nbTours; t++) {
@@ -153,17 +244,17 @@ public class World {
         }
     }
 
-    /** 
-     * Retourne l'ensemble des positions actuellement occupées.
+    /**
+     * Retourne l’ensemble des positions actuellement occupées dans le monde.
      *
-     * @return Set des positions occupées
+     * @return ensemble des positions occupées
      */
     public Set<Point2D> getPositionsOccupees() {
         return positionsOccupees;
     }
 
     /**
-     * Affiche l'état complet du monde et de ses protagonistes.
+     * Affiche l’état complet du monde (personnages, monstres et objets principaux).
      */
     public void afficheWorld() {
         System.out.println();
@@ -179,88 +270,73 @@ public class World {
         System.out.println("===============");
         System.out.println();
     }
-    
-    
-    
-    /*----------------------------------*/
-    
-    
-    private Personnage GenerationP(int id, Point2D p){
-        Random RandomGen = new Random();
-        int randint = RandomGen.nextInt(3);
-        switch (randint){
-            case 0 -> {
-                return new Archer("Archer"+id, true, 100, 80, 20, 80, 50, p, 2, 5, 10);
-            }
-            case 1 -> {
-                return new Paysan("paysan"+id, true, 100, 100, 100, 100, 100, 100, p, 5);
-            }
-            case 2 -> {
-                return new Guerrier("Guerrier"+id, true, 100, 80, 20, 80, 50, p, 1, 3); 
-            }
-            default -> {
-                return null;
-            }
-        }
+
+    /**
+     * Génère un personnage aléatoire (Archer, Paysan ou Guerrier).
+     *
+     * @param id identifiant du personnage
+     * @param p position dans le monde
+     * @return une instance de Personnage
+     */
+    private Personnage GenerationP(int id, Point2D p) {
+        Random randomGen = new Random();
+        int randint = randomGen.nextInt(3);
+        return switch (randint) {
+            case 0 -> new Archer("Archer " + id, true, 100, 80, 20, 80, 50, p, 2, 5, 10);
+            case 1 -> new Paysan("Paysan " + id, true, 100, 100, 100, 100, 100, 100, p, 5);
+            case 2 -> new Guerrier("Guerrier " + id, true, 100, 80, 20, 80, 50, p, 1, 3);
+            default -> null;
+        };
     }
-        /**
+
+    /**
      * Génère un monstre aléatoire (Lapin ou Loup).
      *
      * @param id identifiant du monstre
      * @param p position dans le monde
-     * @return un monstre de type Lapin ou Loup
+     * @return une instance de Monstre
      */
     private Monstre GenerationM(int id, Point2D p) {
         Random rand = new Random();
-        int randint = rand.nextInt(2); // 0 ou 1
-        switch (randint) {
-            case 0 -> {
-                return new Lapin("Lapin" + id, true, 50, 20, 5, 10, 10, p, 1, 2, Monstre.Dangerosite.DOCILE);
-            }
-            case 1 -> {
-                return new Loup("Loup" + id, true, 80, 30, 15, 20, 30, p, 2, 4, Monstre.Dangerosite.DANGEREUX);
-            }
-            default -> {
-                return null;
-            }
-        }
+        int randint = rand.nextInt(2);
+        return switch (randint) {
+            case 0 -> new Lapin("Lapin " + id, true, 50, 20, 5, 10, 10, p, 1, 2, Monstre.Dangerosite.DOCILE);
+            case 1 -> new Loup("Loup " + id, true, 80, 30, 15, 20, 30, p, 2, 4, Monstre.Dangerosite.DANGEREUX);
+            default -> null;
+        };
     }
 
     /**
      * Génère un objet aléatoire (PotionSoin ou Épée).
      *
-     * @param id identifiant de l'objet
+     * @param id identifiant de l’objet
      * @param p position dans le monde
-     * @return un objet de type PotionSoin ou Epée
+     * @return une instance d’Objet
      */
     private Objet GenerationO(int id, Point2D p) {
         Random rand = new Random();
-        int randint = rand.nextInt(2); // 0 ou 1
-        switch (randint) {
-            case 0 -> {
-                return new PotionSoin("Potion" + id, "Potion magique", p, 20);
-            }
-            case 1 -> {
-                return new Epee("Epee" + id, "Épée en acier", p, 15, Epee.Etat.NONE);
-            }
-            default -> {
-                return null;
-            }
-        }
+        int randint = rand.nextInt(2);
+        return switch (randint) {
+            case 0 -> new PotionSoin("Potion " + id, "Potion magique", p, 20);
+            case 1 -> new Epee("Epe " + id, "Epee en acier", p, 15, Epee.Etat.NONE);
+            default -> null;
+        };
     }
-    
-    
+
     /**
-    * Affiche toutes les créatures et objets présents dans le monde.
-    *
-    * @param creatures la liste de créatures
-    * @param objets la liste d'objets
-    */
-    public void afficheListes(LinkedList<Creature> creatures, LinkedList<Objet> objets) {
+     * Affiche toutes les créatures et objets générés dans le monde,
+     * ainsi que leur comptage total par type.
+     *
+     * @param creatures liste des créatures
+     * @param objets liste des objets
+     */
+    private void afficheListes(LinkedList<Creature> creatures, LinkedList<Objet> objets) {
+        Map<Class<?>, Integer> counter = new HashMap<>();
         System.out.println("\n===== LISTE DES CREATURES =====");
         for (Creature c : creatures) {
             if (c != null) {
                 c.affiche();
+                counter.put(c.getClass(), counter.getOrDefault(c.getClass(), 0) + 1);
             }
         }
 
@@ -268,10 +344,49 @@ public class World {
         for (Objet o : objets) {
             if (o != null) {
                 o.affiche();
+                counter.put(o.getClass(), counter.getOrDefault(o.getClass(), 0) + 1);
             }
         }
+
         System.out.println("=============================\n");
+        System.out.println("====== TOTAL =====");
+        for (Map.Entry<Class<?>, Integer> entry : counter.entrySet()) {
+            System.out.println(entry.getKey().getSimpleName() + ": " + entry.getValue());
+        }
+        System.out.println("==================");
     }
 
+    /**
+     * Calcule et affiche le total des points de vie d’une liste de créatures
+     * en parcourant via des indices (méthode adaptée aux List).
+     *
+     * @param creatures liste de créatures
+     */
+    private void affichePointDeVieParTaille(List<Creature> creatures) {
+        int ptVieTotal = 0;
+        for (int i = 0; i < creatures.size(); i++) {
+            ptVieTotal += creatures.get(i).getPtVie();
+        }
+        System.out.println("====== TOTAL POINTS DE VIE =====");
+        System.out.println("Points de vie total : " + ptVieTotal);
+        System.out.println("==================");
+    }
 
+    /**
+     * Calcule et affiche le total des points de vie d’une collection de créatures
+     * en utilisant des itérateurs/for-each.
+     *
+     * @param creatures collection de créatures
+     */
+    private void affichePointDeVieParIterateurs(Collection<Creature> creatures) {
+        int ptVieTotal = 0;
+        for (Creature c : creatures) {
+            if (c != null) {
+                ptVieTotal += c.getPtVie();
+            }
+        }
+        System.out.println("====== TOTAL POINTS DE VIE =====");
+        System.out.println("Points de vie total : " + ptVieTotal);
+        System.out.println("==================");
+    }
 }

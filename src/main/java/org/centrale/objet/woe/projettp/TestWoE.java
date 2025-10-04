@@ -4,6 +4,12 @@
 
 package org.centrale.objet.woe.projettp;
 
+import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.TreeSet;
+
 /**
  *
  * @author srodr
@@ -110,8 +116,27 @@ public class TestWoE {
         w.potionV.affiche();
         w.grosBill.prendObjet(w.potionV, w.getPositionsOccupees());
         w.grosBill.affiche();*/
+        
+        
+        
+        
+        //TP4
+        //Exercice 1
+        /*World W= new World();
+        W.creerMondeAlea();*/
+        
+        //Experimentation avec les mondes:
         World W= new World();
-        W.creerMondeAlea();
+        ArrayList<Creature> creaturesArrayList = new ArrayList<>();
+        LinkedList<Creature> creaturesLinkedList = new LinkedList<>();
+        W.creationLabDeMondePourComparerDesTemps(creaturesArrayList,5);
+        W.creationLabDeMondePourComparerDesTemps(creaturesLinkedList,4);
+
+        
+        
+        
+        
+        
     }
 }
 
