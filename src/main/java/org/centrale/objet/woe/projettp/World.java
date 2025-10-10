@@ -7,56 +7,78 @@ import java.util.*;
  *
  * Cette classe permet de :
  * <ul>
- *   <li>Créer un monde aléatoire avec des positions uniques pour chaque entité.</li>
- *   <li>Générer des personnages, monstres et objets aléatoirement.</li>
- *   <li>Afficher l’état du monde et ses protagonistes.</li>
- *   <li>Mesurer des temps d’exécution pour des calculs sur différentes collections Java.</li>
+ * <li>Créer un monde aléatoire avec des positions uniques pour chaque
+ * entité.</li>
+ * <li>Générer des personnages, monstres et objets aléatoirement.</li>
+ * <li>Afficher l’état du monde et ses protagonistes.</li>
+ * <li>Mesurer des temps d’exécution pour des calculs sur différentes
+ * collections Java.</li>
  * </ul>
- * 
- * 
- * <p>Les positions sont représentées dans un espace 2D borné.</p>
- * 
+ *
+ *
+ * <p>
+ * Les positions sont représentées dans un espace 2D borné.</p>
+ *
  * @author srodr
  */
 public class World {
 
     // ================= PERSONNAGES =================
-    /** Archer principal du monde */
+    /**
+     * Archer principal du monde
+     */
     public Archer robin;
 
-    /** Archer secondaire */
+    /**
+     * Archer secondaire
+     */
     public Archer guillaumeT;
 
-    /** Paysan présent dans le monde */
+    /**
+     * Paysan présent dans le monde
+     */
     public Paysan peon;
 
-    /** Guerrier présent dans le monde */
+    /**
+     * Guerrier présent dans le monde
+     */
     public Guerrier grosBill;
 
-    /** Lapin présent dans le monde */
+    /**
+     * Lapin présent dans le monde
+     */
     public Lapin bugs;
 
-    /** Deuxième lapin */
+    /**
+     * Deuxième lapin
+     */
     public Lapin bugs2;
 
-    /** Loup présent dans le monde */
+    /**
+     * Loup présent dans le monde
+     */
     public Loup wolfie;
 
-    /** Potion de soin présente dans le monde */
+    /**
+     * Potion de soin présente dans le monde
+     */
     public PotionSoin potionV;
 
-    /** Taille (dimension maximale) du monde 2D */
+    /**
+     * Taille (dimension maximale) du monde 2D
+     */
     public int TAILLE_MONDE;
 
     // ================= POSITIONS =================
-    /** Ensemble des positions occupées pour éviter les superpositions */
+    /**
+     * Ensemble des positions occupées pour éviter les superpositions
+     */
     private final Set<Point2D> positionsOccupees;
 
     // ================= CONSTRUCTEUR =================
     /**
-     * Constructeur par défaut.
-     * Initialise les personnages principaux avec des valeurs de base
-     * et l’ensemble des positions occupées.
+     * Constructeur par défaut. Initialise les personnages principaux avec des
+     * valeurs de base et l’ensemble des positions occupées.
      */
     public World() {
         Point2D p = new Point2D(0, 0);
@@ -85,8 +107,8 @@ public class World {
     /**
      * Place aléatoirement les protagonistes du monde dans un espace 2D.
      * <p>
-     * Les coordonnées sont des entiers dans [0, TAILLE_MONDE].
-     * Les positions générées sont uniques et ne se superposent pas.
+     * Les coordonnées sont des entiers dans [0, TAILLE_MONDE]. Les positions
+     * générées sont uniques et ne se superposent pas.
      * </p>
      */
     public void creerMondeAlea() {
@@ -98,7 +120,7 @@ public class World {
         bugs.setPos(positionAleatoire(rand));
         guillaumeT.setPos(positionAleatoire(rand));
 
-        LinkedList<Creature> ListCreature = new LinkedList<>();
+        ArrayList<Creature> ListCreature = new ArrayList<>();
         LinkedList<Objet> ListObjets = new LinkedList<>();
 
         generationCreatures(100, rand, ListCreature);
@@ -109,14 +131,14 @@ public class World {
     }
 
     /**
-     * Crée un laboratoire de test pour comparer les temps d’exécution
-     * entre différentes structures de données (List, Set, etc.).
+     * Crée un laboratoire de test pour comparer les temps d’exécution entre
+     * différentes structures de données (List, Set, etc.).
      * <p>
      * On mesure le temps nécessaire pour calculer le total des points de vie
      * d’un ensemble de créatures en utilisant deux méthodes :
      * <ol>
-     *   <li>Basée sur la taille de la collection (accès indexé si List).</li>
-     *   <li>Basée sur les itérateurs Java.</li>
+     * <li>Basée sur la taille de la collection (accès indexé si List).</li>
+     * <li>Basée sur les itérateurs Java.</li>
      * </ol>
      * </p>
      *
@@ -143,7 +165,7 @@ public class World {
 
         for (int i = 0; i < iteration; i++) {
             collection.clear();
-            long startNs, startMs, endMs, endNs; 
+            long startNs, startMs, endMs, endNs;
 
             System.out.println();
             System.out.println("=== Population actuelle : " + populationInitiale + " personnages ===\n");
@@ -177,7 +199,8 @@ public class World {
     }
 
     /**
-     * Génère un ensemble de créatures aléatoires et les ajoute à une collection.
+     * Génère un ensemble de créatures aléatoires et les ajoute à une
+     * collection.
      *
      * @param maxCreatures nombre maximum de créatures à générer
      * @param rand générateur de nombres aléatoires
@@ -189,8 +212,10 @@ public class World {
             int randint = rand.nextInt(2);
             int id = i + 1;
             switch (randint) {
-                case 0 -> collectionCreature.add(GenerationP(id, cPoint));
-                case 1 -> collectionCreature.add(GenerationM(id, cPoint));
+                case 0 ->
+                    collectionCreature.add(GenerationP(id, cPoint));
+                case 1 ->
+                    collectionCreature.add(GenerationM(id, cPoint));
             }
         }
     }
@@ -228,8 +253,8 @@ public class World {
     }
 
     /**
-     * Effectue une simulation de plusieurs tours : à chaque tour,
-     * tous les personnages se déplacent aléatoirement.
+     * Effectue une simulation de plusieurs tours : à chaque tour, tous les
+     * personnages se déplacent aléatoirement.
      *
      * @param nbTours nombre de tours à exécuter
      */
@@ -254,7 +279,8 @@ public class World {
     }
 
     /**
-     * Affiche l’état complet du monde (personnages, monstres et objets principaux).
+     * Affiche l’état complet du monde (personnages, monstres et objets
+     * principaux).
      */
     public void afficheWorld() {
         System.out.println();
@@ -282,10 +308,14 @@ public class World {
         Random randomGen = new Random();
         int randint = randomGen.nextInt(3);
         return switch (randint) {
-            case 0 -> new Archer("Archer " + id, true, 100, 80, 20, 80, 50, p, 2, 5, 10);
-            case 1 -> new Paysan("Paysan " + id, true, 100, 100, 100, 100, 100, 100, p, 5);
-            case 2 -> new Guerrier("Guerrier " + id, true, 100, 80, 20, 80, 50, p, 1, 3);
-            default -> null;
+            case 0 ->
+                new Archer("Archer " + id, true, 100, 80, 20, 80, 50, p, 2, 5, 10);
+            case 1 ->
+                new Paysan("Paysan " + id, true, 100, 100, 100, 100, 100, 100, p, 5);
+            case 2 ->
+                new Guerrier("Guerrier " + id, true, 100, 80, 20, 80, 50, p, 1, 3);
+            default ->
+                null;
         };
     }
 
@@ -300,9 +330,12 @@ public class World {
         Random rand = new Random();
         int randint = rand.nextInt(2);
         return switch (randint) {
-            case 0 -> new Lapin("Lapin " + id, true, 50, 20, 5, 10, 10, p, 1, 2, Monstre.Dangerosite.DOCILE);
-            case 1 -> new Loup("Loup " + id, true, 80, 30, 15, 20, 30, p, 2, 4, Monstre.Dangerosite.DANGEREUX);
-            default -> null;
+            case 0 ->
+                new Lapin("Lapin " + id, true, 50, 20, 5, 10, 10, p, 1, 2, Monstre.Dangerosite.DOCILE);
+            case 1 ->
+                new Loup("Loup " + id, true, 80, 30, 15, 20, 30, p, 2, 4, Monstre.Dangerosite.DANGEREUX);
+            default ->
+                null;
         };
     }
 
@@ -317,20 +350,23 @@ public class World {
         Random rand = new Random();
         int randint = rand.nextInt(2);
         return switch (randint) {
-            case 0 -> new PotionSoin("Potion " + id, "Potion magique", p, 20);
-            case 1 -> new Epee("Epe " + id, "Epee en acier", p, 15, Epee.Etat.NONE);
-            default -> null;
+            case 0 ->
+                new PotionSoin("Potion " + id, "Potion magique", p, 20);
+            case 1 ->
+                new Epee("Epe " + id, "Epee en acier", p, 15, Epee.Etat.NONE);
+            default ->
+                null;
         };
     }
 
     /**
-     * Affiche toutes les créatures et objets générés dans le monde,
-     * ainsi que leur comptage total par type.
+     * Affiche toutes les créatures et objets générés dans le monde, ainsi que
+     * leur comptage total par type.
      *
      * @param creatures liste des créatures
      * @param objets liste des objets
      */
-    private void afficheListes(LinkedList<Creature> creatures, LinkedList<Objet> objets) {
+    private void afficheListes(List<Creature> creatures, List<Objet> objets) {
         Map<Class<?>, Integer> counter = new HashMap<>();
         System.out.println("\n===== LISTE DES CREATURES =====");
         for (Creature c : creatures) {
@@ -357,8 +393,8 @@ public class World {
     }
 
     /**
-     * Calcule et affiche le total des points de vie d’une liste de créatures
-     * en parcourant via des indices (méthode adaptée aux List).
+     * Calcule et affiche le total des points de vie d’une liste de créatures en
+     * parcourant via des indices (méthode adaptée aux List).
      *
      * @param creatures liste de créatures
      */
@@ -373,20 +409,201 @@ public class World {
     }
 
     /**
-     * Calcule et affiche le total des points de vie d’une collection de créatures
-     * en utilisant des itérateurs/for-each.
+     * Calcule et affiche le total des points de vie d’une collection de
+     * créatures en utilisant des itérateurs/for-each.
      *
      * @param creatures collection de créatures
      */
     private void affichePointDeVieParIterateurs(Collection<Creature> creatures) {
         int ptVieTotal = 0;
         for (Creature c : creatures) {
-            if (c != null) {
-                ptVieTotal += c.getPtVie();
-            }
+            ptVieTotal += c.getPtVie();
         }
         System.out.println("====== TOTAL POINTS DE VIE =====");
         System.out.println("Points de vie total : " + ptVieTotal);
         System.out.println("==================");
     }
+
+    //Des erreurs java
+    /**
+     * Méthode de démonstration des différents types d'erreurs Java. Chaque
+     * section est commentée pour expliquer le type d'erreur.
+     */
+    public void demonstrationErreursJava() {
+        System.out.println("=== DÉMONSTRATION DES DIFFÉRENTS TYPES D'ERREURS JAVA ===");
+
+        // ==================== 1. NULL POINTER EXCEPTION ====================
+        System.out.println("\n1. NullPointerException:");
+        try {
+            Point2D pointNull = null;
+            System.out.println("Coordonnée X: " + pointNull.getX()); // Ligne problématique
+        } catch (NullPointerException e) {
+            System.out.println("❌ Erreur attrapée: " + e.getClass().getSimpleName());
+            System.out.println("Message: " + e.getMessage());
+        }
+
+        // ==================== 2. INDEX OUT OF BOUNDS ====================
+        System.out.println("\n2. IndexOutOfBoundsException:");
+        try {
+            List<Creature> petiteListe = new ArrayList<>();
+            petiteListe.add(GenerationM(1, new Point2D(0, 0)));
+            // Tentative d'accès à un index inexistant
+            Creature creature = petiteListe.get(5); // Ligne problématique
+        } catch (IndexOutOfBoundsException e) {
+            System.out.println("❌ Erreur attrapée: " + e.getClass().getSimpleName());
+            System.out.println("Message: " + e.getMessage());
+        }
+
+        // ==================== 3. CLASS CAST EXCEPTION ====================
+        System.out.println("\n3. ClassCastException:");
+        try {
+            List<Object> objetsDivers = new ArrayList<>();
+            objetsDivers.add(new Archer("Archer", true, 100, 80, 20, 80, 50, new Point2D(0, 0), 2, 5, 10));
+            objetsDivers.add(new PotionSoin("Potion", "Description", new Point2D(1, 1), 20));
+
+            // Tentative de cast incorrect
+            Loup loup = (Loup) objetsDivers.get(0); // Ligne problématique
+        } catch (ClassCastException e) {
+            System.out.println("❌ Erreur attrapée: " + e.getClass().getSimpleName());
+            System.out.println("Message: " + e.getMessage());
+        }
+
+        // ==================== 4. ILLEGAL ARGUMENT EXCEPTION ====================
+        System.out.println("\n4. IllegalArgumentException:");
+        try {
+            // Création avec des valeurs invalides
+            new Archer("", true, -100, -80, -20, -80, -50, new Point2D(0, 0), -2, -5, -10);
+        } catch (IllegalArgumentException e) {
+            System.out.println("❌ Erreur attrapée: " + e.getClass().getSimpleName());
+            System.out.println("Message: " + e.getMessage());
+        }
+
+        // ==================== 5. CONCURRENT MODIFICATION EXCEPTION ====================
+        System.out.println("\n5. ConcurrentModificationException:");
+        try {
+            List<Creature> creatures = new ArrayList<>();
+            creatures.add(GenerationM(1, new Point2D(0, 0)));
+            creatures.add(GenerationM(2, new Point2D(1, 1)));
+            creatures.add(GenerationM(3, new Point2D(2, 2)));
+
+            // Modification pendant l'itération
+            for (Creature creature : creatures) {
+                if (creature.getNom().equals("Loup 1")) {
+                    creatures.remove(creature); // Ligne problématique
+                }
+            }
+        } catch (ConcurrentModificationException e) {
+            System.out.println("❌ Erreur attrapée: " + e.getClass().getSimpleName());
+            System.out.println("Message: " + e.getMessage());
+        }
+
+        // ==================== 6. ARITHMETIC EXCEPTION ====================
+        System.out.println("\n6. ArithmeticException:");
+        try {
+            int pointsDeVie = 100;
+            int diviseur = 0;
+            int resultat = pointsDeVie / diviseur; // Ligne problématique
+        } catch (ArithmeticException e) {
+            System.out.println("❌ Erreur attrapée: " + e.getClass().getSimpleName());
+            System.out.println("Message: " + e.getMessage());
+        }
+
+        // ==================== 7. OUT OF MEMORY ERROR ====================
+        System.out.println("\n7. Démonstration mémoire (sans lancer d'erreur):");
+        try {
+            // Simulation légère pour éviter de crasher l'application
+            List<Point2D> grandeListe = new ArrayList<>();
+            for (int i = 0; i < 1000000; i++) {
+                grandeListe.add(new Point2D(i, i));
+            }
+            System.out.println("✅ Gestion mémoire réussie avec " + grandeListe.size() + " éléments");
+        } catch (OutOfMemoryError e) {
+            System.out.println("❌ Erreur attrapée: " + e.getClass().getSimpleName());
+            System.out.println("Message: " + e.getMessage());
+        }
+
+        // ==================== 8. STACK OVERFLOW ERROR ====================
+        System.out.println("\n8. StackOverflowError (méthode récursive):");
+        try {
+            methodeRecursive(0);
+        } catch (StackOverflowError e) {
+            System.out.println("❌ Erreur attrapée: " + e.getClass().getSimpleName());
+        }
+
+        // ==================== 9. NUMBER FORMAT EXCEPTION ====================
+        System.out.println("\n9. NumberFormatException:");
+        try {
+            String texteInvalide = "pas_un_nombre";
+            int nombre = Integer.parseInt(texteInvalide); // Ligne problématique
+        } catch (NumberFormatException e) {
+            System.out.println("❌ Erreur attrapée: " + e.getClass().getSimpleName());
+            System.out.println("Message: " + e.getMessage());
+        }
+
+        // ==================== 10. ILLEGAL STATE EXCEPTION ====================
+        System.out.println("\n10. IllegalStateException:");
+        try {
+            List<Creature> creatures = new ArrayList<>();
+            Iterator<Creature> iterator = creatures.iterator();
+            // Tentative d'utilisation incorrecte d'iterator
+            iterator.remove(); // Ligne problématique
+        } catch (IllegalStateException e) {
+            System.out.println("❌ Erreur attrapée: " + e.getClass().getSimpleName());
+            System.out.println("Message: " + e.getMessage());
+        }
+
+        System.out.println("\n=== FIN DE LA DÉMONSTRATION ===");
+    }
+
+    /**
+     * Méthode utilitaire pour démontrer StackOverflowError
+     */
+    private void methodeRecursive(int compteur) {
+        // Condition d'arrêt jamais atteinte
+        methodeRecursive(compteur + 1);
+    }
+
+    /**
+     * Méthode pour démontrer les erreurs de validation avec des messages
+     * personnalisés
+     */
+    public void demonstrationValidation() {
+        System.out.println("\n=== VALIDATION AVEC MESSAGES D'ERREUR PERSONNALISÉS ===");
+
+        // Validation des paramètres
+        try {
+            validerParametres(-10, new Point2D(0, 0));
+        } catch (IllegalArgumentException e) {
+            System.out.println("❌ Erreur de validation: " + e.getMessage());
+        }
+
+        // Validation d'état
+        try {
+            validerEtatMonde();
+        } catch (IllegalStateException e) {
+            System.out.println("❌ Erreur d'état: " + e.getMessage());
+        }
+    }
+
+    private void validerParametres(int pointsVie, Point2D position) {
+        if (pointsVie <= 0) {
+            throw new IllegalArgumentException("Les points de vie doivent être positifs: " + pointsVie);
+        }
+        if (position == null) {
+            throw new IllegalArgumentException("La position ne peut pas être null");
+        }
+        if (position.getX() < 0 || position.getY() < 0) {
+            throw new IllegalArgumentException("Position hors limites: " + position);
+        }
+    }
+
+    private void validerEtatMonde() {
+        if (positionsOccupees == null) {
+            throw new IllegalStateException("L'ensemble des positions occupées n'est pas initialisé");
+        }
+        if (TAILLE_MONDE <= 0) {
+            throw new IllegalStateException("La taille du monde doit être positive: " + TAILLE_MONDE);
+        }
+    }
+
 }
