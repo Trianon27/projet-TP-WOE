@@ -17,7 +17,7 @@ import java.util.Set;
  * 
  * @author srodr
  */
-public class Loup extends Monstre {
+public class Loup extends Monstre implements Combattant {
 
     // ================= CONSTRUCTEURS =================
 
@@ -70,6 +70,8 @@ public class Loup extends Monstre {
      * @param c La créature cible
      * @param positionWorld Ensemble des positions occupées dans le monde
      */
+    
+    @Override
     public void combattre(Creature c, Set<Point2D> positionWorld) {
 
         if (this.getPos().distance(c.getPos()) <= (this.getDistAttMax() * Math.sqrt(2)) && c.isEtat() && this.isEtat()) {

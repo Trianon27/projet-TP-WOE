@@ -22,7 +22,7 @@ import java.util.Set;
  * 
  * @author srodr
  */
-public class Archer extends Personnage {
+public class Archer extends Personnage implements Combattant {
 
     /**
      * Nombre de flèches disponibles pour l’archer.
@@ -97,6 +97,8 @@ public class Archer extends Personnage {
      * @param c La créature ciblée
      * @param positionWorld L’ensemble des positions occupées dans le monde
      */
+    
+    @Override
     public void combattre(Creature c, Set<Point2D> positionWorld) {
         // Quitter si aucune flèche restante ou si la cible est déjà morte
         if (!this.isEtat() || !c.isEtat()) {
