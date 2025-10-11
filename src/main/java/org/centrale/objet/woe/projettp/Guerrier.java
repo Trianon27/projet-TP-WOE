@@ -16,7 +16,7 @@ import java.util.Set;
  * 
  * @author srodr
  */
-public class Guerrier extends Personnage {
+public class Guerrier extends Personnage implements Combattant {
 
     // ================= CONSTRUCTEURS =================
 
@@ -68,6 +68,7 @@ public class Guerrier extends Personnage {
      * @param c La créature cible
      * @param positionWorld Ensemble des positions occupées dans le monde
      */
+    @Override
     public void combattre(Creature c, Set<Point2D> positionWorld) {
 
         // Vérifie si la cible est à portée d'attaque et si les deux sont vivants

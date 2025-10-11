@@ -12,17 +12,12 @@ package org.centrale.objet.woe.projettp;
  * 
  * @author srodr
  */
-public class Objet {
+public class Objet extends ElementDeJeu {
     
-    /** Nom de l'objet */
-    private String nom;
     
     /** Description de l'objet */
     private String description;
-    
-    /** Position */
-    private Point2D position; 
-    
+
     // ================= CONSTRUCTEURS =================
 
     /**
@@ -30,9 +25,8 @@ public class Objet {
      * Initialise l'objet avec le nom et la description "None".
      */
     public Objet() {
-        this.nom = "None";
+        super();
         this.description = "None";
-        this.position = new Point2D(0,0);
     }
 
     /**
@@ -43,9 +37,8 @@ public class Objet {
      * @param position
      */
     public Objet(String nom, String description, Point2D position) {
-        this.nom = nom;
+        super(nom,position);
         this.description = description;
-        this.position = position; 
     }
     
     /**
@@ -56,19 +49,12 @@ public class Objet {
     public Objet(Objet o) {
         this.nom = o.nom;
         this.description = o.description;
-        this.position = o.position; 
+        this.pos = o.pos; 
     }
 
     // ================= GETTERS ET SETTERS =================
 
-    /**
-     * Retourne le nom de l'objet.
-     * 
-     * @return Nom de l'objet
-     */
-    public String getNom() {
-        return nom;
-    }
+
 
     /**
      * Retourne la description de l'objet.
@@ -79,14 +65,8 @@ public class Objet {
         return description;
     }
 
-    /**
-     * Définit le nom de l'objet.
-     * 
-     * @param nom Nouveau nom
-     */
-    public void setNom(String nom) {
-        this.nom = nom;
-    }
+
+
 
     /**
      * Définit la description de l'objet.
@@ -98,11 +78,11 @@ public class Objet {
     }
 
     public Point2D getPosition() {
-        return position;
+        return pos;
     }
 
     public void setPosition(Point2D position) {
-        this.position = position;
+        this.pos = position;
     }
     
     // ================= MÉTHODES =================
@@ -110,10 +90,11 @@ public class Objet {
     /**
      * Affiche les informations de l'objet sur la console.
      */
+    @Override
     public void affiche() {
         System.out.println();
         System.out.println("Nom : " + this.nom);
         System.out.println("Description : " + this.description);
-        System.out.println("Position : (" + position.getX() + ", " + position.getY() + ")");
+        System.out.println("Position : (" + pos.getX() + ", " + pos.getY() + ")");
     }
 }

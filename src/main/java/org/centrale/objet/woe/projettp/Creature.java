@@ -18,12 +18,9 @@ import java.util.Set;
  * 
  * @author srodr
  */
-public class Creature {
+public class Creature extends ElementDeJeu implements Deplacable {
 
     // ================= ATTRIBUTS =================
-    
-    /** Nom de la créature */
-    private String nom; 
     
     /** État de la créature (vivant ou mort) */
     private boolean etat; 
@@ -46,8 +43,6 @@ public class Creature {
     /** Distance maximale d’attaque */
     private int distAttMax;
 
-    /** Position actuelle de la créature dans le monde */
-    private Point2D pos;
     
     /** Distance de vision de la créature */
     private int distanceVision; 
@@ -69,7 +64,7 @@ public class Creature {
      * @param distanceVision Distance de vision
      */
     public Creature(String nom, boolean etat, int pVie, int dAtt, int pPar, int paAtt, int paPar, Point2D p, int distAttMax, int distanceVision) {
-        this.nom = nom; 
+        super(nom,p);
         this.etat = etat;
         this.ptVie = pVie;
         this.degAtt = dAtt;
@@ -77,7 +72,6 @@ public class Creature {
         this.pageAtt = paAtt;
         this.pagePar = paPar;
         this.distAttMax = distAttMax;
-        this.pos = p;
         this.distanceVision = distanceVision; 
     }
 
@@ -87,14 +81,13 @@ public class Creature {
      * @param c Créature à copier
      */
     public Creature(Creature c) {
-        this.nom = c.nom;
+        super(c);
         this.etat = c.etat; 
         this.ptVie = c.ptVie;
         this.degAtt = c.degAtt;
         this.ptPar = c.ptPar;
         this.pageAtt = c.pageAtt;
         this.pagePar = c.pagePar;
-        this.pos = new Point2D(c.getPos());
         this.distAttMax = c.distAttMax;
         this.distanceVision = c.distanceVision; 
     }
@@ -103,27 +96,20 @@ public class Creature {
      * Construit une créature par défaut avec des valeurs prédéfinies.
      */
     public Creature() {
-        this.nom = "Inconnu";
+        super();
         this.etat = true; 
         this.ptVie = 50;
         this.degAtt = 5;
         this.ptPar = 2;
         this.pageAtt = 50;
         this.pagePar = 30;
-        this.pos = new Point2D(0, 0);
         this.distAttMax = 1;
         this.distanceVision = 1; 
     }
 
     // ================= GETTERS / SETTERS =================
 
-    public String getNom() {
-        return nom;
-    }
-    
-    public void setNom(String nom) {
-        this.nom = nom;
-    }
+
     
     /** @return les points de vie actuels */
     public int getPtVie() {
@@ -175,15 +161,7 @@ public class Creature {
         this.pagePar = pagePar;
     }
 
-    /** @return la position actuelle de la créature */
-    public Point2D getPos() {
-        return pos;
-    }
 
-    /** @param pos nouvelle position */
-    public void setPos(Point2D pos) {
-        this.pos = pos;
-    }
 
     public int getDistanceVision() {
         return distanceVision;
@@ -217,7 +195,8 @@ public class Creature {
      * @param dx déplacement horizontal
      * @param dy déplacement vertical
      */
-    public void deplace(int dx, int dy) {
+    @Override
+    public void deplacer(int dx, int dy) {
         this.pos.translate(dx, dy);
     }
 
@@ -254,6 +233,7 @@ public class Creature {
     /**
      * Affiche toutes les informations principales de la créature sur la console.
      */
+    @Override
     public void affiche() {
         System.out.println();
         System.out.println();
