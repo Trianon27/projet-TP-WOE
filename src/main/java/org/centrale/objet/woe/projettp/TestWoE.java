@@ -126,17 +126,20 @@ public class TestWoE {
         W.creerMondeAlea();*/
         
         //Experimentation avec les mondes:
-        World W= new World();
-        ArrayList<Creature> creaturesArrayList = new ArrayList<>();
+        //World W= new World();
+        /*ArrayList<Creature> creaturesArrayList = new ArrayList<>();
         LinkedList<Creature> creaturesLinkedList = new LinkedList<>();
         W.creationLabDeMondePourComparerDesTemps(creaturesArrayList,5);
-        W.creationLabDeMondePourComparerDesTemps(creaturesLinkedList,4);
-
+        W.creationLabDeMondePourComparerDesTemps(creaturesLinkedList,4);*/
         
         
         
+        World w= new World();
+        w.creerMondeAlea();
+        Joueur moi = w.creationJoueur();
+        w.tourDeJour(15, moi);
         
-        
+    
     }
 }
 

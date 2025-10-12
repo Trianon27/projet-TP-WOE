@@ -69,6 +69,10 @@ public class World {
      */
     public int TAILLE_MONDE;
 
+    public ArrayList<Creature> ListCreature;
+
+    public LinkedList<Objet> ListObjets;
+
     // ================= POSITIONS =================
     /**
      * Ensemble des positions occupées pour éviter les superpositions
@@ -100,10 +104,84 @@ public class World {
         potionV = new PotionSoin("Potion de Vie", "Potion tres forte", p3, 20);
 
         positionsOccupees = new HashSet<>();
-        TAILLE_MONDE = 50;
+        TAILLE_MONDE = 8;
+
+        this.ListCreature = new ArrayList<>();
+        this.ListObjets = new LinkedList<>();
+
     }
 
     // ================= MÉTHODES =================
+    public Joueur creationJoueur() {
+        Random rand = new Random();
+        Joueur moi = new Joueur();
+        String nom;
+        int election;
+        Scanner sc = new Scanner(System.in);
+        boolean choixValide;
+
+        do {
+            choixValide = true;
+
+            System.out.println("Choisissez un personnage :");
+            System.out.println("1 - Guerrier");
+            System.out.println("2 - Archer");
+            System.out.println("3 - Choix aléatoire");
+
+            election = sc.nextInt();
+
+            if (election == 3) {
+                election = rand.nextInt(2) + 1; // 1 ou 2 aléatoirement
+                System.out.println("Un personnage aléatoire a été choisi pour vous !");
+            }
+
+            System.out.println("Choisissez le nom de votre personnage : ");
+            nom = sc.next();
+
+            switch (election) {
+                case 1 -> {
+                    boolean etat = true;
+                    int pVie = rand.nextInt(101) + 50;
+                    int dAtt = rand.nextInt(21) + 10;
+                    int pPar = rand.nextInt(21) + 5;
+                    int paAtt = rand.nextInt(51) + 50;
+                    int paPar = rand.nextInt(51) + 30;
+                    Point2D p = positionAleatoire(rand);
+                    int dMax = 1;
+                    int distanceVision = 10;
+                    moi.hero = new Guerrier(nom, etat, pVie, dAtt, pPar, paAtt, paPar, p, dMax, distanceVision);
+                    moi.hero.affiche();
+                }
+
+                case 2 -> {
+                    boolean etatArcher = true;
+                    int pVieArcher = rand.nextInt(21) + 80;
+                    int dAttArcher = rand.nextInt(11) + 5;
+                    int pParArcher = rand.nextInt(11) + 5;
+                    int paAttArcher = rand.nextInt(51) + 50;
+                    int paParArcher = rand.nextInt(51) + 30;
+                    Point2D pArcher = positionAleatoire(rand);
+                    int dMaxArcher = 2;
+                    int distanceVisionArcher = 12;
+                    int nbFleches = rand.nextInt(11) + 5;
+
+                    moi.hero = new Archer(nom, etatArcher, pVieArcher, dAttArcher, pParArcher,
+                            paAttArcher, paParArcher, pArcher, dMaxArcher, distanceVisionArcher, nbFleches);
+                    moi.hero.affiche();
+                }
+
+                default -> {
+                    System.out.println("Choix invalide ! Veuillez réessayer.");
+                    choixValide = false;
+                }
+            }
+
+        } while (!choixValide);
+
+        moi.hero.setPos(positionAleatoire(rand));
+        return moi;
+    }
+
     /**
      * Place aléatoirement les protagonistes du monde dans un espace 2D.
      * <p>
@@ -114,22 +192,19 @@ public class World {
     public void creerMondeAlea() {
         Random rand = new Random();
         positionsOccupees.clear();
-
         robin.setPos(positionAleatoire(rand));
         peon.setPos(positionAleatoire(rand));
         bugs.setPos(positionAleatoire(rand));
         guillaumeT.setPos(positionAleatoire(rand));
 
-        ArrayList<Creature> ListCreature = new ArrayList<>();
-        LinkedList<Objet> ListObjets = new LinkedList<>();
+        generationCreatures(5, rand, this.ListCreature);
+        generationObjets(5, rand, this.ListObjets);
 
-        generationCreatures(100, rand, ListCreature);
-        generationObjets(20, rand, ListObjets);
-
-        afficheListes(ListCreature, ListObjets);
-        affichePointDeVieParTaille(ListCreature);
+        //afficheListes(ListCreature, ListObjets);
+        //affichePointDeVieParTaille(ListCreature);
     }
 
+    
     /**
      * Crée un laboratoire de test pour comparer les temps d’exécution entre
      * différentes structures de données (List, Set, etc.).
@@ -149,7 +224,7 @@ public class World {
         Random rand = new Random();
         System.out.println("=== Type de collection utilisee : " + collection.getClass().getSimpleName() + " ===");
 
-        this.TAILLE_MONDE = 1500;
+        this.TAILLE_MONDE = 1000;
         int populationInitiale = 100;
 
         System.out.println("""
@@ -257,15 +332,17 @@ public class World {
      * personnages se déplacent aléatoirement.
      *
      * @param nbTours nombre de tours à exécuter
+     * @param moi
      */
-    public void tourDeJour(int nbTours) {
+    public void tourDeJour(int nbTours, Joueur moi) {
         for (int t = 0; t < nbTours; t++) {
+            moi.analyzer(this.positionsOccupees, this.ListCreature, this.ListObjets);
             robin.deplaceAleatoire();
             guillaumeT.deplaceAleatoire();
             peon.deplaceAleatoire();
             bugs.deplaceAleatoire();
 
-            afficheWorld();
+            afficheWorld(moi);
         }
     }
 
@@ -281,8 +358,10 @@ public class World {
     /**
      * Affiche l’état complet du monde (personnages, monstres et objets
      * principaux).
+     *
+     * @param moi
      */
-    public void afficheWorld() {
+    public void afficheWorld(Joueur moi) {
         System.out.println();
         System.out.println("=== Monde WoE ===");
         robin.affiche();
@@ -293,6 +372,7 @@ public class World {
         bugs2.affiche();
         wolfie.affiche();
         potionV.affiche();
+        moi.hero.affiche();
         System.out.println("===============");
         System.out.println();
     }
