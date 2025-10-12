@@ -1,24 +1,31 @@
 package org.centrale.objet.woe.projettp;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 /**
  * La classe {@code Personnage} représente un personnage du jeu.
  * <p>
- * Un personnage hérite des caractéristiques de {@link Creature} et peut se déplacer,
- * afficher ses informations, combattre, interagir avec des objets et être copié.
+ * Un personnage hérite des caractéristiques de {@link Creature} et peut se
+ * déplacer, afficher ses informations, combattre, interagir avec des objets et
+ * être copié.
  * </p>
- * 
+ *
  * <p>
- * Cette classe sert de base pour des personnages spécialisés comme {@link Archer}.
+ * Cette classe sert de base pour des personnages spécialisés comme
+ * {@link Archer}.
  * </p>
- * 
+ *
  * @author srodr
  */
 public class Personnage extends Creature {
 
-    // ================= CONSTRUCTEURS =================
+    private List<ObjetUtilisable> effetsActifs= new ArrayList<>();
+    private List<Objet> inventaire = new ArrayList<>();
 
+    // ================= CONSTRUCTEURS =================
     /**
      * Constructeur par défaut.
      * <p>
@@ -56,50 +63,90 @@ public class Personnage extends Creature {
         super(perso);
     }
 
-    // ================= MÉTHODES =================
+    public List<ObjetUtilisable> getEffetsActifs() {
+        return effetsActifs;
+    }
 
+    public List<Objet> getInventaire() {
+        return inventaire;
+    }
+
+    
+    
+    public void setEffetsActifs(List<ObjetUtilisable> effetsActifs) {
+        this.effetsActifs = effetsActifs;
+    }
+
+    public void setInventaire(List<Objet> inventaire) {
+        this.inventaire = inventaire;
+    }
+    
+    
+    
+    
+
+    // ================= MÉTHODES =================
     /**
      * Permet au personnage de prendre un objet situé sur sa position.
      * <p>
-     * Cette méthode vérifie d'abord que la position du personnage correspond à la
-     * position de l'objet. Ensuite, selon le type de l'objet, elle applique ses effets :
+     * Cette méthode vérifie d'abord que la position du personnage correspond à
+     * la position de l'objet. Ensuite, selon le type de l'objet, elle applique
+     * ses effets :
      * </p>
      * <ul>
-     *   <li>{@link PotionSoin} : augmente les points de vie du personnage.</li>
-     *   <li>{@link Epee} : augmente les dégâts d'attaque du personnage.</li>
-     *   <li>Autres types : aucune action.</li>
+     * <li>{@link PotionSoin} : augmente les points de vie du personnage.</li>
+     * <li>{@link Epee} : augmente les dégâts d'attaque du personnage.</li>
+     * <li>Autres types : aucune action.</li>
      * </ul>
      * <p>
-     * Après l'interaction, l'objet est retiré de l'ensemble des positions occupées
-     * du monde {@code positionWorld}.
+     * Après l'interaction, l'objet est retiré de l'ensemble des positions
+     * occupées du monde {@code positionWorld}.
      * </p>
      *
      * @param o L'objet à ramasser
      * @param positionWorld L'ensemble des positions occupées dans le monde
      */
     public void prendObjet(Objet o, Set<Point2D> positionWorld) {
-        // Vérifie que la position du personnage est la même que celle de l'objet
-        if (this.getPos().getX() == o.getPosition().getX() &&
-            this.getPos().getY() == o.getPosition().getY()) {
+        if (this.getPos().equals(o.getPosition())) {
 
             switch (o) {
-                case PotionSoin potion -> { 
-                    // Cast vers PotionSoin et application de l'effet
+                case PotionSoin potion -> {
                     this.setPtVie(this.getPtVie() + potion.getpVie());
-                    System.out.println("Potion consommee, vie actuelle: " + this.getPtVie());
+                    System.out.println("Potion consommée, vie actuelle : " + this.getPtVie());
                 }
-                case Epee epee -> { 
-                    // Cast vers Epee et application de l'effet
+                case Epee epee -> {
                     this.setDegAtt(this.getDegAtt() + epee.getpAtt());
-                    System.out.println("Épee prise, attaque actuelle: " + this.getDegAtt());
+                    System.out.println("Épée prise, attaque actuelle : " + this.getDegAtt());
+                }
+                case ObjetUtilisable utilisable -> {
+                    utilisable.appliquerEffet(this);
+                    this.effetsActifs.add(utilisable);
+                    System.out.println("Objet utilisable activé : " + o.getNom());
                 }
                 default -> {
-                    // Aucun effet pour les autres types d'objet
+                    // Aucun effet
                 }
             }
 
-            // Retire la position de l'objet du monde
+            // Retire l’objet du monde
             positionWorld.remove(o.getPosition());
+        }
+    }
+
+    public void mettreAJourEffets() {
+        Iterator<ObjetUtilisable> it = effetsActifs.iterator();
+        while (it.hasNext()) {
+            ObjetUtilisable effet = it.next();
+
+            // On décrémente la durée de vie de l'effet
+            effet.decrementerDuree();
+
+            // Si l'effet n'est plus actif, on le retire
+            if (!effet.estActif()) {
+                effet.retirerEffet(this);
+                it.remove();
+                System.out.println("Effet terminé et retiré : " + effet);
+            }
         }
     }
 

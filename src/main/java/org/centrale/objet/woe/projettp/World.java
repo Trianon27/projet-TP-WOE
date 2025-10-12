@@ -69,6 +69,10 @@ public class World {
      */
     public int TAILLE_MONDE;
 
+    public ArrayList<Creature> ListCreature;
+
+    public LinkedList<Objet> ListObjets;
+
     // ================= POSITIONS =================
     /**
      * Ensemble des positions occupées pour éviter les superpositions
@@ -100,10 +104,84 @@ public class World {
         potionV = new PotionSoin("Potion de Vie", "Potion tres forte", p3, 20);
 
         positionsOccupees = new HashSet<>();
-        TAILLE_MONDE = 50;
+        TAILLE_MONDE = 8;
+
+        this.ListCreature = new ArrayList<>();
+        this.ListObjets = new LinkedList<>();
+
     }
 
     // ================= MÉTHODES =================
+    public Joueur creationJoueur() {
+        Random rand = new Random();
+        Joueur moi = new Joueur();
+        String nom;
+        int election;
+        Scanner sc = new Scanner(System.in);
+        boolean choixValide;
+
+        do {
+            choixValide = true;
+
+            System.out.println("Choisissez un personnage :");
+            System.out.println("1 - Guerrier");
+            System.out.println("2 - Archer");
+            System.out.println("3 - Choix aléatoire");
+
+            election = sc.nextInt();
+
+            if (election == 3) {
+                election = rand.nextInt(2) + 1; // 1 ou 2 aléatoirement
+                System.out.println("Un personnage aléatoire a été choisi pour vous !");
+            }
+
+            System.out.println("Choisissez le nom de votre personnage : ");
+            nom = sc.next();
+
+            switch (election) {
+                case 1 -> {
+                    boolean etat = true;
+                    int pVie = rand.nextInt(101) + 50;
+                    int dAtt = rand.nextInt(21) + 10;
+                    int pPar = rand.nextInt(21) + 5;
+                    int paAtt = rand.nextInt(51) + 50;
+                    int paPar = rand.nextInt(51) + 30;
+                    Point2D p = positionAleatoire(rand);
+                    int dMax = 1;
+                    int distanceVision = 10;
+                    moi.hero = new Guerrier(nom, etat, pVie, dAtt, pPar, paAtt, paPar, p, dMax, distanceVision);
+                    moi.hero.affiche();
+                }
+
+                case 2 -> {
+                    boolean etatArcher = true;
+                    int pVieArcher = rand.nextInt(21) + 80;
+                    int dAttArcher = rand.nextInt(11) + 5;
+                    int pParArcher = rand.nextInt(11) + 5;
+                    int paAttArcher = rand.nextInt(51) + 50;
+                    int paParArcher = rand.nextInt(51) + 30;
+                    Point2D pArcher = positionAleatoire(rand);
+                    int dMaxArcher = 2;
+                    int distanceVisionArcher = 12;
+                    int nbFleches = rand.nextInt(11) + 5;
+
+                    moi.hero = new Archer(nom, etatArcher, pVieArcher, dAttArcher, pParArcher,
+                            paAttArcher, paParArcher, pArcher, dMaxArcher, distanceVisionArcher, nbFleches);
+                    moi.hero.affiche();
+                }
+
+                default -> {
+                    System.out.println("Choix invalide ! Veuillez réessayer.");
+                    choixValide = false;
+                }
+            }
+
+        } while (!choixValide);
+
+        moi.hero.setPos(positionAleatoire(rand));
+        return moi;
+    }
+
     /**
      * Place aléatoirement les protagonistes du monde dans un espace 2D.
      * <p>
@@ -114,22 +192,19 @@ public class World {
     public void creerMondeAlea() {
         Random rand = new Random();
         positionsOccupees.clear();
-
         robin.setPos(positionAleatoire(rand));
         peon.setPos(positionAleatoire(rand));
         bugs.setPos(positionAleatoire(rand));
         guillaumeT.setPos(positionAleatoire(rand));
 
-        ArrayList<Creature> ListCreature = new ArrayList<>();
-        LinkedList<Objet> ListObjets = new LinkedList<>();
+        generationCreatures(5, rand, this.ListCreature);
+        generationObjets(5, rand, this.ListObjets);
 
-        generationCreatures(100, rand, ListCreature);
-        generationObjets(20, rand, ListObjets);
-
-        afficheListes(ListCreature, ListObjets);
-        affichePointDeVieParTaille(ListCreature);
+        //afficheListes(ListCreature, ListObjets);
+        //affichePointDeVieParTaille(ListCreature);
     }
 
+    
     /**
      * Crée un laboratoire de test pour comparer les temps d’exécution entre
      * différentes structures de données (List, Set, etc.).
@@ -149,7 +224,7 @@ public class World {
         Random rand = new Random();
         System.out.println("=== Type de collection utilisee : " + collection.getClass().getSimpleName() + " ===");
 
-        this.TAILLE_MONDE = 1500;
+        this.TAILLE_MONDE = 1000;
         int populationInitiale = 100;
 
         System.out.println("""
@@ -257,15 +332,17 @@ public class World {
      * personnages se déplacent aléatoirement.
      *
      * @param nbTours nombre de tours à exécuter
+     * @param moi
      */
-    public void tourDeJour(int nbTours) {
+    public void tourDeJour(int nbTours, Joueur moi) {
         for (int t = 0; t < nbTours; t++) {
+            moi.analyzer(this.positionsOccupees, this.ListCreature, this.ListObjets);
             robin.deplaceAleatoire();
             guillaumeT.deplaceAleatoire();
             peon.deplaceAleatoire();
             bugs.deplaceAleatoire();
 
-            afficheWorld();
+            afficheWorld(moi);
         }
     }
 
@@ -281,8 +358,10 @@ public class World {
     /**
      * Affiche l’état complet du monde (personnages, monstres et objets
      * principaux).
+     *
+     * @param moi
      */
-    public void afficheWorld() {
+    public void afficheWorld(Joueur moi) {
         System.out.println();
         System.out.println("=== Monde WoE ===");
         robin.affiche();
@@ -293,6 +372,7 @@ public class World {
         bugs2.affiche();
         wolfie.affiche();
         potionV.affiche();
+        moi.hero.affiche();
         System.out.println("===============");
         System.out.println();
     }
@@ -423,187 +503,4 @@ public class World {
         System.out.println("Points de vie total : " + ptVieTotal);
         System.out.println("==================");
     }
-
-    //Des erreurs java
-    /**
-     * Méthode de démonstration des différents types d'erreurs Java. Chaque
-     * section est commentée pour expliquer le type d'erreur.
-     */
-    public void demonstrationErreursJava() {
-        System.out.println("=== DÉMONSTRATION DES DIFFÉRENTS TYPES D'ERREURS JAVA ===");
-
-        // ==================== 1. NULL POINTER EXCEPTION ====================
-        System.out.println("\n1. NullPointerException:");
-        try {
-            Point2D pointNull = null;
-            System.out.println("Coordonnée X: " + pointNull.getX()); // Ligne problématique
-        } catch (NullPointerException e) {
-            System.out.println("❌ Erreur attrapée: " + e.getClass().getSimpleName());
-            System.out.println("Message: " + e.getMessage());
-        }
-
-        // ==================== 2. INDEX OUT OF BOUNDS ====================
-        System.out.println("\n2. IndexOutOfBoundsException:");
-        try {
-            List<Creature> petiteListe = new ArrayList<>();
-            petiteListe.add(GenerationM(1, new Point2D(0, 0)));
-            // Tentative d'accès à un index inexistant
-            Creature creature = petiteListe.get(5); // Ligne problématique
-        } catch (IndexOutOfBoundsException e) {
-            System.out.println("❌ Erreur attrapée: " + e.getClass().getSimpleName());
-            System.out.println("Message: " + e.getMessage());
-        }
-
-        // ==================== 3. CLASS CAST EXCEPTION ====================
-        System.out.println("\n3. ClassCastException:");
-        try {
-            List<Object> objetsDivers = new ArrayList<>();
-            objetsDivers.add(new Archer("Archer", true, 100, 80, 20, 80, 50, new Point2D(0, 0), 2, 5, 10));
-            objetsDivers.add(new PotionSoin("Potion", "Description", new Point2D(1, 1), 20));
-
-            // Tentative de cast incorrect
-            Loup loup = (Loup) objetsDivers.get(0); // Ligne problématique
-        } catch (ClassCastException e) {
-            System.out.println("❌ Erreur attrapée: " + e.getClass().getSimpleName());
-            System.out.println("Message: " + e.getMessage());
-        }
-
-        // ==================== 4. ILLEGAL ARGUMENT EXCEPTION ====================
-        System.out.println("\n4. IllegalArgumentException:");
-        try {
-            // Création avec des valeurs invalides
-            new Archer("", true, -100, -80, -20, -80, -50, new Point2D(0, 0), -2, -5, -10);
-        } catch (IllegalArgumentException e) {
-            System.out.println("❌ Erreur attrapée: " + e.getClass().getSimpleName());
-            System.out.println("Message: " + e.getMessage());
-        }
-
-        // ==================== 5. CONCURRENT MODIFICATION EXCEPTION ====================
-        System.out.println("\n5. ConcurrentModificationException:");
-        try {
-            List<Creature> creatures = new ArrayList<>();
-            creatures.add(GenerationM(1, new Point2D(0, 0)));
-            creatures.add(GenerationM(2, new Point2D(1, 1)));
-            creatures.add(GenerationM(3, new Point2D(2, 2)));
-
-            // Modification pendant l'itération
-            for (Creature creature : creatures) {
-                if (creature.getNom().equals("Loup 1")) {
-                    creatures.remove(creature); // Ligne problématique
-                }
-            }
-        } catch (ConcurrentModificationException e) {
-            System.out.println("❌ Erreur attrapée: " + e.getClass().getSimpleName());
-            System.out.println("Message: " + e.getMessage());
-        }
-
-        // ==================== 6. ARITHMETIC EXCEPTION ====================
-        System.out.println("\n6. ArithmeticException:");
-        try {
-            int pointsDeVie = 100;
-            int diviseur = 0;
-            int resultat = pointsDeVie / diviseur; // Ligne problématique
-        } catch (ArithmeticException e) {
-            System.out.println("❌ Erreur attrapée: " + e.getClass().getSimpleName());
-            System.out.println("Message: " + e.getMessage());
-        }
-
-        // ==================== 7. OUT OF MEMORY ERROR ====================
-        System.out.println("\n7. Démonstration mémoire (sans lancer d'erreur):");
-        try {
-            // Simulation légère pour éviter de crasher l'application
-            List<Point2D> grandeListe = new ArrayList<>();
-            for (int i = 0; i < 1000000; i++) {
-                grandeListe.add(new Point2D(i, i));
-            }
-            System.out.println("✅ Gestion mémoire réussie avec " + grandeListe.size() + " éléments");
-        } catch (OutOfMemoryError e) {
-            System.out.println("❌ Erreur attrapée: " + e.getClass().getSimpleName());
-            System.out.println("Message: " + e.getMessage());
-        }
-
-        // ==================== 8. STACK OVERFLOW ERROR ====================
-        System.out.println("\n8. StackOverflowError (méthode récursive):");
-        try {
-            methodeRecursive(0);
-        } catch (StackOverflowError e) {
-            System.out.println("❌ Erreur attrapée: " + e.getClass().getSimpleName());
-        }
-
-        // ==================== 9. NUMBER FORMAT EXCEPTION ====================
-        System.out.println("\n9. NumberFormatException:");
-        try {
-            String texteInvalide = "pas_un_nombre";
-            int nombre = Integer.parseInt(texteInvalide); // Ligne problématique
-        } catch (NumberFormatException e) {
-            System.out.println("❌ Erreur attrapée: " + e.getClass().getSimpleName());
-            System.out.println("Message: " + e.getMessage());
-        }
-
-        // ==================== 10. ILLEGAL STATE EXCEPTION ====================
-        System.out.println("\n10. IllegalStateException:");
-        try {
-            List<Creature> creatures = new ArrayList<>();
-            Iterator<Creature> iterator = creatures.iterator();
-            // Tentative d'utilisation incorrecte d'iterator
-            iterator.remove(); // Ligne problématique
-        } catch (IllegalStateException e) {
-            System.out.println("❌ Erreur attrapée: " + e.getClass().getSimpleName());
-            System.out.println("Message: " + e.getMessage());
-        }
-
-        System.out.println("\n=== FIN DE LA DÉMONSTRATION ===");
-    }
-
-    /**
-     * Méthode utilitaire pour démontrer StackOverflowError
-     */
-    private void methodeRecursive(int compteur) {
-        // Condition d'arrêt jamais atteinte
-        methodeRecursive(compteur + 1);
-    }
-
-    /**
-     * Méthode pour démontrer les erreurs de validation avec des messages
-     * personnalisés
-     */
-    public void demonstrationValidation() {
-        System.out.println("\n=== VALIDATION AVEC MESSAGES D'ERREUR PERSONNALISÉS ===");
-
-        // Validation des paramètres
-        try {
-            validerParametres(-10, new Point2D(0, 0));
-        } catch (IllegalArgumentException e) {
-            System.out.println("❌ Erreur de validation: " + e.getMessage());
-        }
-
-        // Validation d'état
-        try {
-            validerEtatMonde();
-        } catch (IllegalStateException e) {
-            System.out.println("❌ Erreur d'état: " + e.getMessage());
-        }
-    }
-
-    private void validerParametres(int pointsVie, Point2D position) {
-        if (pointsVie <= 0) {
-            throw new IllegalArgumentException("Les points de vie doivent être positifs: " + pointsVie);
-        }
-        if (position == null) {
-            throw new IllegalArgumentException("La position ne peut pas être null");
-        }
-        if (position.getX() < 0 || position.getY() < 0) {
-            throw new IllegalArgumentException("Position hors limites: " + position);
-        }
-    }
-
-    private void validerEtatMonde() {
-        if (positionsOccupees == null) {
-            throw new IllegalStateException("L'ensemble des positions occupées n'est pas initialisé");
-        }
-        if (TAILLE_MONDE <= 0) {
-            throw new IllegalStateException("La taille du monde doit être positive: " + TAILLE_MONDE);
-        }
-    }
-
 }
