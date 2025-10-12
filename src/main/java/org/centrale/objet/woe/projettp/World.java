@@ -503,4 +503,187 @@ public class World {
         System.out.println("Points de vie total : " + ptVieTotal);
         System.out.println("==================");
     }
+
+    //Des erreurs java
+    /**
+     * Méthode de démonstration des différents types d'erreurs Java. Chaque
+     * section est commentée pour expliquer le type d'erreur.
+     */
+    public void demonstrationErreursJava() {
+        System.out.println("=== DÉMONSTRATION DES DIFFÉRENTS TYPES D'ERREURS JAVA ===");
+
+        // ==================== 1. NULL POINTER EXCEPTION ====================
+        System.out.println("\n1. NullPointerException:");
+        try {
+            Point2D pointNull = null;
+            System.out.println("Coordonnée X: " + pointNull.getX()); // Ligne problématique
+        } catch (NullPointerException e) {
+            System.out.println("❌ Erreur attrapée: " + e.getClass().getSimpleName());
+            System.out.println("Message: " + e.getMessage());
+        }
+
+        // ==================== 2. INDEX OUT OF BOUNDS ====================
+        System.out.println("\n2. IndexOutOfBoundsException:");
+        try {
+            List<Creature> petiteListe = new ArrayList<>();
+            petiteListe.add(GenerationM(1, new Point2D(0, 0)));
+            // Tentative d'accès à un index inexistant
+            Creature creature = petiteListe.get(5); // Ligne problématique
+        } catch (IndexOutOfBoundsException e) {
+            System.out.println("❌ Erreur attrapée: " + e.getClass().getSimpleName());
+            System.out.println("Message: " + e.getMessage());
+        }
+
+        // ==================== 3. CLASS CAST EXCEPTION ====================
+        System.out.println("\n3. ClassCastException:");
+        try {
+            List<Object> objetsDivers = new ArrayList<>();
+            objetsDivers.add(new Archer("Archer", true, 100, 80, 20, 80, 50, new Point2D(0, 0), 2, 5, 10));
+            objetsDivers.add(new PotionSoin("Potion", "Description", new Point2D(1, 1), 20));
+
+            // Tentative de cast incorrect
+            Loup loup = (Loup) objetsDivers.get(0); // Ligne problématique
+        } catch (ClassCastException e) {
+            System.out.println("❌ Erreur attrapée: " + e.getClass().getSimpleName());
+            System.out.println("Message: " + e.getMessage());
+        }
+
+        // ==================== 4. ILLEGAL ARGUMENT EXCEPTION ====================
+        System.out.println("\n4. IllegalArgumentException:");
+        try {
+            // Création avec des valeurs invalides
+            new Archer("", true, -100, -80, -20, -80, -50, new Point2D(0, 0), -2, -5, -10);
+        } catch (IllegalArgumentException e) {
+            System.out.println("❌ Erreur attrapée: " + e.getClass().getSimpleName());
+            System.out.println("Message: " + e.getMessage());
+        }
+
+        // ==================== 5. CONCURRENT MODIFICATION EXCEPTION ====================
+        System.out.println("\n5. ConcurrentModificationException:");
+        try {
+            List<Creature> creatures = new ArrayList<>();
+            creatures.add(GenerationM(1, new Point2D(0, 0)));
+            creatures.add(GenerationM(2, new Point2D(1, 1)));
+            creatures.add(GenerationM(3, new Point2D(2, 2)));
+
+            // Modification pendant l'itération
+            for (Creature creature : creatures) {
+                if (creature.getNom().equals("Loup 1")) {
+                    creatures.remove(creature); // Ligne problématique
+                }
+            }
+        } catch (ConcurrentModificationException e) {
+            System.out.println("❌ Erreur attrapée: " + e.getClass().getSimpleName());
+            System.out.println("Message: " + e.getMessage());
+        }
+
+        // ==================== 6. ARITHMETIC EXCEPTION ====================
+        System.out.println("\n6. ArithmeticException:");
+        try {
+            int pointsDeVie = 100;
+            int diviseur = 0;
+            int resultat = pointsDeVie / diviseur; // Ligne problématique
+        } catch (ArithmeticException e) {
+            System.out.println("❌ Erreur attrapée: " + e.getClass().getSimpleName());
+            System.out.println("Message: " + e.getMessage());
+        }
+
+        // ==================== 7. OUT OF MEMORY ERROR ====================
+        System.out.println("\n7. Démonstration mémoire (sans lancer d'erreur):");
+        try {
+            // Simulation légère pour éviter de crasher l'application
+            List<Point2D> grandeListe = new ArrayList<>();
+            for (int i = 0; i < 1000000; i++) {
+                grandeListe.add(new Point2D(i, i));
+            }
+            System.out.println("✅ Gestion mémoire réussie avec " + grandeListe.size() + " éléments");
+        } catch (OutOfMemoryError e) {
+            System.out.println("❌ Erreur attrapée: " + e.getClass().getSimpleName());
+            System.out.println("Message: " + e.getMessage());
+        }
+
+        // ==================== 8. STACK OVERFLOW ERROR ====================
+        System.out.println("\n8. StackOverflowError (méthode récursive):");
+        try {
+            methodeRecursive(0);
+        } catch (StackOverflowError e) {
+            System.out.println("❌ Erreur attrapée: " + e.getClass().getSimpleName());
+        }
+
+        // ==================== 9. NUMBER FORMAT EXCEPTION ====================
+        System.out.println("\n9. NumberFormatException:");
+        try {
+            String texteInvalide = "pas_un_nombre";
+            int nombre = Integer.parseInt(texteInvalide); // Ligne problématique
+        } catch (NumberFormatException e) {
+            System.out.println("❌ Erreur attrapée: " + e.getClass().getSimpleName());
+            System.out.println("Message: " + e.getMessage());
+        }
+
+        // ==================== 10. ILLEGAL STATE EXCEPTION ====================
+        System.out.println("\n10. IllegalStateException:");
+        try {
+            List<Creature> creatures = new ArrayList<>();
+            Iterator<Creature> iterator = creatures.iterator();
+            // Tentative d'utilisation incorrecte d'iterator
+            iterator.remove(); // Ligne problématique
+        } catch (IllegalStateException e) {
+            System.out.println("❌ Erreur attrapée: " + e.getClass().getSimpleName());
+            System.out.println("Message: " + e.getMessage());
+        }
+
+        System.out.println("\n=== FIN DE LA DÉMONSTRATION ===");
+    }
+
+    /**
+     * Méthode utilitaire pour démontrer StackOverflowError
+     */
+    private void methodeRecursive(int compteur) {
+        // Condition d'arrêt jamais atteinte
+        methodeRecursive(compteur + 1);
+    }
+
+    /**
+     * Méthode pour démontrer les erreurs de validation avec des messages
+     * personnalisés
+     */
+    public void demonstrationValidation() {
+        System.out.println("\n=== VALIDATION AVEC MESSAGES D'ERREUR PERSONNALISÉS ===");
+
+        // Validation des paramètres
+        try {
+            validerParametres(-10, new Point2D(0, 0));
+        } catch (IllegalArgumentException e) {
+            System.out.println("❌ Erreur de validation: " + e.getMessage());
+        }
+
+        // Validation d'état
+        try {
+            validerEtatMonde();
+        } catch (IllegalStateException e) {
+            System.out.println("❌ Erreur d'état: " + e.getMessage());
+        }
+    }
+
+    private void validerParametres(int pointsVie, Point2D position) {
+        if (pointsVie <= 0) {
+            throw new IllegalArgumentException("Les points de vie doivent être positifs: " + pointsVie);
+        }
+        if (position == null) {
+            throw new IllegalArgumentException("La position ne peut pas être null");
+        }
+        if (position.getX() < 0 || position.getY() < 0) {
+            throw new IllegalArgumentException("Position hors limites: " + position);
+        }
+    }
+
+    private void validerEtatMonde() {
+        if (positionsOccupees == null) {
+            throw new IllegalStateException("L'ensemble des positions occupées n'est pas initialisé");
+        }
+        if (TAILLE_MONDE <= 0) {
+            throw new IllegalStateException("La taille du monde doit être positive: " + TAILLE_MONDE);
+        }
+    }
+
 }
