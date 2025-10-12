@@ -138,7 +138,7 @@ public class TestWoE {
         w.creerMondeAlea();
         Joueur moi = w.creationJoueur();
         w.tourDeJour(15, moi);
-        
+        //w.demonstrationErreursJava();
     
     }
 }
