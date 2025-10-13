@@ -4,6 +4,7 @@
  */
 package org.centrale.objet.woe.projettp;
 
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
@@ -224,10 +225,12 @@ public class Creature extends ElementDeJeu implements Deplacable {
      * et en supprimant sa position de la carte du monde.
      *
      * @param positionWorld ensemble des positions occupées dans le monde
+     * @param creatures
      */
-    public void mourir(Set<Point2D> positionWorld){
+    public void mourir(Set<Point2D> positionWorld, List<Creature> creatures){
         this.etat = false; 
         positionWorld.remove(this.pos);
+        creatures.remove(this);
     }
 
     /**

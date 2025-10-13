@@ -104,7 +104,7 @@ public class World {
         potionV = new PotionSoin("Potion de Vie", "Potion tres forte", p3, 20);
 
         positionsOccupees = new HashSet<>();
-        TAILLE_MONDE = 8;
+        TAILLE_MONDE = 20;
 
         this.ListCreature = new ArrayList<>();
         this.ListObjets = new LinkedList<>();
@@ -148,7 +148,7 @@ public class World {
                     int paPar = rand.nextInt(51) + 30;
                     Point2D p = positionAleatoire(rand);
                     int dMax = 1;
-                    int distanceVision = 10;
+                    int distanceVision = 5;
                     moi.hero = new Guerrier(nom, etat, pVie, dAtt, pPar, paAtt, paPar, p, dMax, distanceVision);
                     moi.hero.affiche();
                 }
@@ -162,7 +162,7 @@ public class World {
                     int paParArcher = rand.nextInt(51) + 30;
                     Point2D pArcher = positionAleatoire(rand);
                     int dMaxArcher = 2;
-                    int distanceVisionArcher = 12;
+                    int distanceVisionArcher = 6;
                     int nbFleches = rand.nextInt(11) + 5;
 
                     moi.hero = new Archer(nom, etatArcher, pVieArcher, dAttArcher, pParArcher,
@@ -196,8 +196,8 @@ public class World {
         bugs.setPos(positionAleatoire(rand));
         guillaumeT.setPos(positionAleatoire(rand));
 
-        generationCreatures(5, rand, this.ListCreature);
-        generationObjets(5, rand, this.ListObjets);
+        generationCreatures(10, rand, this.ListCreature);
+        generationObjets(10, rand, this.ListObjets);
 
         //afficheListes(ListCreature, ListObjets);
         //affichePointDeVieParTaille(ListCreature);
@@ -466,7 +466,7 @@ public class World {
                 if (y >= 0 && y < monde.length && x >= 0 && x < monde[0].length) {
                     System.out.print(monde[y][x] + " ");
                 } else {
-                    System.out.print("/"); // bordure hors du monde
+                    System.out.print("*"); // bordure hors du monde
                 }
             }
             System.out.println();

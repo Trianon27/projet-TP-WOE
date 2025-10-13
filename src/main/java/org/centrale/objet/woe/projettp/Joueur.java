@@ -170,10 +170,10 @@ public class Joueur {
                 case 2 -> dy = 1;
                 case 3 -> dx = -1;
                 case 4 -> dx = 1;
-                case 5 -> { dx = -1; dy = 1; }
-                case 6 -> { dx = 1; dy = 1; }
-                case 7 -> { dx = -1; dy = -1; }
-                case 8 -> { dx = 1; dy = -1; }
+                case 5 -> { dx = -1; dy = -1; }
+                case 6 -> { dx = 1; dy = -1; }
+                case 7 -> { dx = -1; dy = 1; }
+                case 8 -> { dx = 1; dy = 1; }
                 default -> { System.out.println("Choix invalide !"); choixValide = false; continue; }
             }
 

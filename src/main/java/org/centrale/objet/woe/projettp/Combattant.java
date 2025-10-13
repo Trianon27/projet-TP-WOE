@@ -4,6 +4,7 @@
  */
 package org.centrale.objet.woe.projettp;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -76,6 +77,7 @@ public interface Combattant {
      *
      * @param c la créature cible de l’attaque (instance de {@link Creature})
      * @param positionWorld l’ensemble des positions actuellement occupées dans le monde du jeu
+     * @param creatures
      */
-    void combattre(Creature c, Set<Point2D> positionWorld);
+    void combattre(Creature c, Set<Point2D> positionWorld, List<Creature> creatures);
 }

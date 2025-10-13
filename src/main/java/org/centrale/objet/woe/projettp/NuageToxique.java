@@ -3,6 +3,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package org.centrale.objet.woe.projettp;
+import java.util.List;
 import java.util.Set;
 /**
  * La classe {@code NuageToxique} représente un élément dangereux du monde du jeu
@@ -205,9 +206,10 @@ public class NuageToxique extends Objet implements Deplacable, Combattant {
      *
      * @param c la créature potentiellement affectée par le nuage
      * @param positionWorld ensemble des positions actuellement occupées dans le monde
+     * @param creatures
      */
     @Override
-    public void combattre(Creature c, Set<Point2D> positionWorld) {
+    public void combattre(Creature c, Set<Point2D> positionWorld,List<Creature> creatures) {
         // Si le nuage est dissipé, il n'agit plus
         if (!this.estActif()) {
             return;
@@ -238,7 +240,7 @@ public class NuageToxique extends Objet implements Deplacable, Combattant {
             // Vérifie l'état de la créature après l'attaque
             if (c.getPtVie() <= 0) {
                 System.out.println("" + c.getNom() + " a succombé au nuage toxique !");
-                c.mourir(positionWorld);  // Supprime la créature du monde et met son état à faux
+                c.mourir(positionWorld, creatures);  // Supprime la créature du monde et met son état à faux
             } else {
                 System.out.println("Il reste " + c.getPtVie() + " points de vie à " + c.getNom() + ".");
             }
