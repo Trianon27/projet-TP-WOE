@@ -1,0 +1,516 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ClassDiagram name="main.java.org.centrale.objet.woe.projettp">
+  <ClassDiagramComponents>
+    <Class name="Archer" package="org.centrale.objet.woe.projettp" visibility="public" xPosition="20.0" yPosition="20.0">
+      <Fields>
+        <Field name="nbFleches" type="int" visibility="private"/>
+      </Fields>
+      <Constructors>
+        <Constructor visibility="public">
+          <Argument type="String" name="n"/>
+          <Argument type="boolean" name="etat"/>
+          <Argument type="int" name="pVie"/>
+          <Argument type="int" name="dAtt"/>
+          <Argument type="int" name="pPar"/>
+          <Argument type="int" name="paAtt"/>
+          <Argument type="int" name="paPar"/>
+          <Argument type="Point2D" name="p"/>
+          <Argument type="int" name="dMax"/>
+          <Argument type="int" name="distanceVision"/>
+          <Argument type="int" name="nbFleches"/>
+        </Constructor>
+        <Constructor visibility="public">
+          <Argument type="Archer" name="a"/>
+        </Constructor>
+        <Constructor visibility="public"/>
+      </Constructors>
+      <Methods>
+        <Method name="getNbFleches" returnType="int" visibility="public"/>
+        <Method name="setNbFleches" returnType="void" visibility="public">
+          <Argument type="int" name="nbFleches"/>
+        </Method>
+        <Method name="combattre" returnType="void" visibility="public">
+          <Argument type="Creature" name="c"/>
+          <Argument type="Set&lt;Point2D&gt;" name="positionWorld"/>
+        </Method>
+        <Method name="jeuDeAtt" returnType="boolean" visibility="public"/>
+        <Method name="jeuDeDe" returnType="boolean" visibility="public">
+          <Argument type="Creature" name="c"/>
+        </Method>
+        <Method name="affiche" returnType="void" visibility="public"/>
+      </Methods>
+    </Class>
+    <Interface name="Combattant" package="org.centrale.objet.woe.projettp" visibility="public" xPosition="320.0" yPosition="20.0">
+      <Methods>
+        <Method name="combattre" returnType="void" visibility="package">
+          <Argument type="Creature" name="c"/>
+          <Argument type="Set&lt;Point2D&gt;" name="positionWorld"/>
+        </Method>
+      </Methods>
+    </Interface>
+    <Class name="Creature" package="org.centrale.objet.woe.projettp" visibility="public" xPosition="620.0" yPosition="20.0">
+      <Fields>
+        <Field name="etat" type="boolean" visibility="private"/>
+        <Field name="ptVie" type="int" visibility="private"/>
+        <Field name="degAtt" type="int" visibility="private"/>
+        <Field name="ptPar" type="int" visibility="private"/>
+        <Field name="pageAtt" type="int" visibility="private"/>
+        <Field name="pagePar" type="int" visibility="private"/>
+        <Field name="distAttMax" type="int" visibility="private"/>
+        <Field name="distanceVision" type="int" visibility="private"/>
+      </Fields>
+      <Constructors>
+        <Constructor visibility="public">
+          <Argument type="String" name="nom"/>
+          <Argument type="boolean" name="etat"/>
+          <Argument type="int" name="pVie"/>
+          <Argument type="int" name="dAtt"/>
+          <Argument type="int" name="pPar"/>
+          <Argument type="int" name="paAtt"/>
+          <Argument type="int" name="paPar"/>
+          <Argument type="Point2D" name="p"/>
+          <Argument type="int" name="distAttMax"/>
+          <Argument type="int" name="distanceVision"/>
+        </Constructor>
+        <Constructor visibility="public">
+          <Argument type="Creature" name="c"/>
+        </Constructor>
+        <Constructor visibility="public"/>
+      </Constructors>
+      <Methods>
+        <Method name="getPtVie" returnType="int" visibility="public"/>
+        <Method name="setPtVie" returnType="void" visibility="public">
+          <Argument type="int" name="ptVie"/>
+        </Method>
+        <Method name="getDegAtt" returnType="int" visibility="public"/>
+        <Method name="setDegAtt" returnType="void" visibility="public">
+          <Argument type="int" name="degAtt"/>
+        </Method>
+        <Method name="getPtPar" returnType="int" visibility="public"/>
+        <Method name="setPtPar" returnType="void" visibility="public">
+          <Argument type="int" name="ptPar"/>
+        </Method>
+        <Method name="getPageAtt" returnType="int" visibility="public"/>
+        <Method name="setPageAtt" returnType="void" visibility="public">
+          <Argument type="int" name="pageAtt"/>
+        </Method>
+        <Method name="getPagePar" returnType="int" visibility="public"/>
+        <Method name="setPagePar" returnType="void" visibility="public">
+          <Argument type="int" name="pagePar"/>
+        </Method>
+        <Method name="getDistanceVision" returnType="int" visibility="public"/>
+        <Method name="setDistanceVision" returnType="void" visibility="public">
+          <Argument type="int" name="distanceVision"/>
+        </Method>
+        <Method name="getDistAttMax" returnType="int" visibility="public"/>
+        <Method name="setDistAttMax" returnType="void" visibility="public">
+          <Argument type="int" name="distAttMax"/>
+        </Method>
+        <Method name="isEtat" returnType="boolean" visibility="public"/>
+        <Method name="setEtat" returnType="void" visibility="public">
+          <Argument type="boolean" name="etat"/>
+        </Method>
+        <Method name="deplacer" returnType="void" visibility="public">
+          <Argument type="int" name="dx"/>
+          <Argument type="int" name="dy"/>
+        </Method>
+        <Method name="deplaceAleatoire" returnType="void" visibility="public"/>
+        <Method name="mourir" returnType="void" visibility="public">
+          <Argument type="Set&lt;Point2D&gt;" name="positionWorld"/>
+        </Method>
+        <Method name="affiche" returnType="void" visibility="public"/>
+      </Methods>
+    </Class>
+    <Interface name="Deplacable" package="org.centrale.objet.woe.projettp" visibility="public" xPosition="920.0" yPosition="20.0">
+      <Methods>
+        <Method name="deplacer" returnType="void" visibility="package">
+          <Argument type="int" name="dx"/>
+          <Argument type="int" name="dy"/>
+        </Method>
+      </Methods>
+    </Interface>
+    <Class name="ElementDeJeu" package="org.centrale.objet.woe.projettp" visibility="public" isAbstract="true" xPosition="1220.0" yPosition="20.0">
+      <Fields>
+        <Field name="nom" type="String" visibility="protected"/>
+        <Field name="pos" type="Point2D" visibility="protected"/>
+      </Fields>
+      <Constructors>
+        <Constructor visibility="public"/>
+        <Constructor visibility="public">
+          <Argument type="String" name="nom"/>
+          <Argument type="Point2D" name="pos"/>
+        </Constructor>
+        <Constructor visibility="public">
+          <Argument type="ElementDeJeu" name="E"/>
+        </Constructor>
+      </Constructors>
+      <Methods>
+        <Method name="getNom" returnType="String" visibility="public"/>
+        <Method name="setNom" returnType="void" visibility="public">
+          <Argument type="String" name="nom"/>
+        </Method>
+        <Method name="getPos" returnType="Point2D" visibility="public"/>
+        <Method name="setPos" returnType="void" visibility="public">
+          <Argument type="Point2D" name="pos"/>
+        </Method>
+        <Method name="affiche" returnType="void" visibility="public" isAbstract="true"/>
+      </Methods>
+    </Class>
+    <Class name="Epee" package="org.centrale.objet.woe.projettp" visibility="public" xPosition="1520.0" yPosition="20.0">
+      <Fields>
+        <Field name="pAtt" type="int" visibility="private"/>
+        <Field name="effet" type="Etat" visibility="private"/>
+      </Fields>
+      <Constructors>
+        <Constructor visibility="public"/>
+        <Constructor visibility="public">
+          <Argument type="String" name="nom"/>
+          <Argument type="String" name="description"/>
+          <Argument type="Point2D" name="p"/>
+          <Argument type="int" name="pAtt"/>
+          <Argument type="Etat" name="effet"/>
+        </Constructor>
+        <Constructor visibility="public">
+          <Argument type="Epee" name="e"/>
+        </Constructor>
+      </Constructors>
+      <Methods>
+        <Method name="getEffet" returnType="Etat" visibility="public"/>
+        <Method name="setEffet" returnType="void" visibility="public">
+          <Argument type="Etat" name="effet"/>
+        </Method>
+        <Method name="getpAtt" returnType="int" visibility="public"/>
+        <Method name="setpAtt" returnType="void" visibility="public">
+          <Argument type="int" name="pAtt"/>
+        </Method>
+      </Methods>
+    </Class>
+    <Class name="Guerrier" package="org.centrale.objet.woe.projettp" visibility="public" xPosition="1820.0" yPosition="20.0">
+      <Fields/>
+      <Constructors>
+        <Constructor visibility="public"/>
+        <Constructor visibility="public">
+          <Argument type="String" name="n"/>
+          <Argument type="boolean" name="etat"/>
+          <Argument type="int" name="pVie"/>
+          <Argument type="int" name="dAtt"/>
+          <Argument type="int" name="pPar"/>
+          <Argument type="int" name="paAtt"/>
+          <Argument type="int" name="paPar"/>
+          <Argument type="Point2D" name="p"/>
+          <Argument type="int" name="dMax"/>
+          <Argument type="int" name="distanceVision"/>
+        </Constructor>
+        <Constructor visibility="public">
+          <Argument type="Personnage" name="perso"/>
+        </Constructor>
+      </Constructors>
+      <Methods>
+        <Method name="combattre" returnType="void" visibility="public">
+          <Argument type="Creature" name="c"/>
+          <Argument type="Set&lt;Point2D&gt;" name="positionWorld"/>
+        </Method>
+        <Method name="jeuDeAtt" returnType="boolean" visibility="public"/>
+        <Method name="jeuDeDe" returnType="boolean" visibility="public">
+          <Argument type="Creature" name="c"/>
+        </Method>
+      </Methods>
+    </Class>
+    <Class name="Lapin" package="org.centrale.objet.woe.projettp" visibility="public" xPosition="2120.0" yPosition="20.0">
+      <Fields/>
+      <Constructors>
+        <Constructor visibility="public">
+          <Argument type="String" name="nom"/>
+          <Argument type="boolean" name="etat"/>
+          <Argument type="int" name="pVie"/>
+          <Argument type="int" name="dAtt"/>
+          <Argument type="int" name="pPar"/>
+          <Argument type="int" name="paAtt"/>
+          <Argument type="int" name="paPar"/>
+          <Argument type="Point2D" name="p"/>
+          <Argument type="int" name="dMax"/>
+          <Argument type="int" name="distanceVision"/>
+          <Argument type="Dangerosite" name="dangerosite"/>
+        </Constructor>
+        <Constructor visibility="public">
+          <Argument type="Lapin" name="l"/>
+        </Constructor>
+        <Constructor visibility="public"/>
+      </Constructors>
+      <Methods/>
+    </Class>
+    <Class name="Loup" package="org.centrale.objet.woe.projettp" visibility="public" xPosition="20.0" yPosition="420.0">
+      <Fields/>
+      <Constructors>
+        <Constructor visibility="public"/>
+        <Constructor visibility="public">
+          <Argument type="String" name="nom"/>
+          <Argument type="boolean" name="etat"/>
+          <Argument type="int" name="pVie"/>
+          <Argument type="int" name="dAtt"/>
+          <Argument type="int" name="pPar"/>
+          <Argument type="int" name="paAtt"/>
+          <Argument type="int" name="paPar"/>
+          <Argument type="Point2D" name="p"/>
+          <Argument type="int" name="distAttMax"/>
+          <Argument type="int" name="distanceVision"/>
+          <Argument type="Dangerosite" name="dangerosite"/>
+        </Constructor>
+        <Constructor visibility="public">
+          <Argument type="Monstre" name="m"/>
+        </Constructor>
+      </Constructors>
+      <Methods>
+        <Method name="combattre" returnType="void" visibility="public">
+          <Argument type="Creature" name="c"/>
+          <Argument type="Set&lt;Point2D&gt;" name="positionWorld"/>
+        </Method>
+        <Method name="jeuDeAtt" returnType="boolean" visibility="public"/>
+        <Method name="jeuDeDe" returnType="boolean" visibility="public">
+          <Argument type="Creature" name="c"/>
+        </Method>
+      </Methods>
+    </Class>
+    <Class name="Monstre" package="org.centrale.objet.woe.projettp" visibility="public" xPosition="320.0" yPosition="420.0">
+      <Fields>
+        <Field name="dangerosite" type="Dangerosite" visibility="private"/>
+      </Fields>
+      <Constructors>
+        <Constructor visibility="public"/>
+        <Constructor visibility="public">
+          <Argument type="String" name="nom"/>
+          <Argument type="boolean" name="etat"/>
+          <Argument type="int" name="pVie"/>
+          <Argument type="int" name="dAtt"/>
+          <Argument type="int" name="pPar"/>
+          <Argument type="int" name="paAtt"/>
+          <Argument type="int" name="paPar"/>
+          <Argument type="Point2D" name="p"/>
+          <Argument type="int" name="distAttMax"/>
+          <Argument type="int" name="distanceVision"/>
+          <Argument type="Dangerosite" name="dangerosite"/>
+        </Constructor>
+        <Constructor visibility="public">
+          <Argument type="Monstre" name="m"/>
+        </Constructor>
+      </Constructors>
+      <Methods>
+        <Method name="getDangerosite" returnType="Dangerosite" visibility="public"/>
+        <Method name="setDangerosite" returnType="void" visibility="public">
+          <Argument type="Dangerosite" name="dangerosite"/>
+        </Method>
+      </Methods>
+    </Class>
+    <Class name="NuageToxique" package="org.centrale.objet.woe.projettp" visibility="public" xPosition="620.0" yPosition="420.0">
+      <Fields>
+        <Field name="degatParTour" type="int" visibility="private"/>
+        <Field name="taille" type="int" visibility="private"/>
+        <Field name="duree" type="int" visibility="private"/>
+      </Fields>
+      <Constructors>
+        <Constructor visibility="public"/>
+        <Constructor visibility="public">
+          <Argument type="String" name="nom"/>
+          <Argument type="String" name="description"/>
+          <Argument type="Point2D" name="p"/>
+          <Argument type="int" name="degat"/>
+          <Argument type="int" name="taille"/>
+          <Argument type="int" name="duree"/>
+        </Constructor>
+        <Constructor visibility="public">
+          <Argument type="NuageToxique" name="autreNuage"/>
+        </Constructor>
+      </Constructors>
+      <Methods>
+        <Method name="getDegatParTour" returnType="int" visibility="public"/>
+        <Method name="setDegatParTour" returnType="void" visibility="public">
+          <Argument type="int" name="degatParTour"/>
+        </Method>
+        <Method name="getTaille" returnType="int" visibility="public"/>
+        <Method name="setTaille" returnType="void" visibility="public">
+          <Argument type="int" name="taille"/>
+        </Method>
+        <Method name="getDuree" returnType="int" visibility="public"/>
+        <Method name="setDuree" returnType="void" visibility="public">
+          <Argument type="int" name="duree"/>
+        </Method>
+        <Method name="decrementerDuree" returnType="void" visibility="public"/>
+        <Method name="estActif" returnType="boolean" visibility="public"/>
+        <Method name="deplacer" returnType="void" visibility="public">
+          <Argument type="int" name="dx"/>
+          <Argument type="int" name="dy"/>
+        </Method>
+        <Method name="combattre" returnType="void" visibility="public">
+          <Argument type="Creature" name="c"/>
+          <Argument type="Set&lt;Point2D&gt;" name="positionWorld"/>
+        </Method>
+      </Methods>
+    </Class>
+    <Class name="Objet" package="org.centrale.objet.woe.projettp" visibility="public" xPosition="920.0" yPosition="420.0">
+      <Fields>
+        <Field name="description" type="String" visibility="private"/>
+      </Fields>
+      <Constructors>
+        <Constructor visibility="public"/>
+        <Constructor visibility="public">
+          <Argument type="String" name="nom"/>
+          <Argument type="String" name="description"/>
+          <Argument type="Point2D" name="position"/>
+        </Constructor>
+        <Constructor visibility="public">
+          <Argument type="Objet" name="o"/>
+        </Constructor>
+      </Constructors>
+      <Methods>
+        <Method name="getDescription" returnType="String" visibility="public"/>
+        <Method name="setDescription" returnType="void" visibility="public">
+          <Argument type="String" name="description"/>
+        </Method>
+        <Method name="getPosition" returnType="Point2D" visibility="public"/>
+        <Method name="setPosition" returnType="void" visibility="public">
+          <Argument type="Point2D" name="position"/>
+        </Method>
+        <Method name="affiche" returnType="void" visibility="public"/>
+      </Methods>
+    </Class>
+    <Interface name="ObjetUtilisable" package="org.centrale.objet.woe.projettp" visibility="public" xPosition="1220.0" yPosition="420.0">
+      <Methods>
+        <Method name="appliquerEffet" returnType="void" visibility="package">
+          <Argument type="Personnage" name="p"/>
+        </Method>
+        <Method name="retirerEffet" returnType="void" visibility="package">
+          <Argument type="Personnage" name="p"/>
+        </Method>
+        <Method name="decrementerDuree" returnType="void" visibility="package"/>
+        <Method name="estActif" returnType="boolean" visibility="package"/>
+      </Methods>
+    </Interface>
+    <Class name="Paysan" package="org.centrale.objet.woe.projettp" visibility="public" xPosition="1520.0" yPosition="420.0">
+      <Fields/>
+      <Constructors>
+        <Constructor visibility="public">
+          <Argument type="String" name="n"/>
+          <Argument type="boolean" name="etat"/>
+          <Argument type="int" name="pVie"/>
+          <Argument type="int" name="dAtt"/>
+          <Argument type="int" name="pPar"/>
+          <Argument type="int" name="paAtt"/>
+          <Argument type="int" name="paPar"/>
+          <Argument type="int" name="dMax"/>
+          <Argument type="Point2D" name="p"/>
+          <Argument type="int" name="distanceVision"/>
+        </Constructor>
+        <Constructor visibility="public">
+          <Argument type="Paysan" name="p"/>
+        </Constructor>
+        <Constructor visibility="public"/>
+      </Constructors>
+      <Methods/>
+    </Class>
+    <Class name="Point2D" package="org.centrale.objet.woe.projettp" visibility="public" xPosition="1820.0" yPosition="420.0">
+      <Fields>
+        <Field name="x" type="int" visibility="private"/>
+        <Field name="y" type="int" visibility="private"/>
+      </Fields>
+      <Constructors>
+        <Constructor visibility="public"/>
+        <Constructor visibility="public">
+          <Argument type="int" name="x"/>
+          <Argument type="int" name="y"/>
+        </Constructor>
+        <Constructor visibility="public">
+          <Argument type="Point2D" name="p"/>
+        </Constructor>
+      </Constructors>
+      <Methods>
+        <Method name="getX" returnType="int" visibility="public"/>
+        <Method name="getY" returnType="int" visibility="public"/>
+        <Method name="setX" returnType="void" visibility="public">
+          <Argument type="int" name="x"/>
+        </Method>
+        <Method name="setY" returnType="void" visibility="public">
+          <Argument type="int" name="y"/>
+        </Method>
+        <Method name="setPosition" returnType="void" visibility="public">
+          <Argument type="int" name="x"/>
+          <Argument type="int" name="y"/>
+        </Method>
+        <Method name="translate" returnType="void" visibility="public">
+          <Argument type="int" name="dx"/>
+          <Argument type="int" name="dy"/>
+        </Method>
+        <Method name="affiche" returnType="void" visibility="public"/>
+        <Method name="distance" returnType="float" visibility="public">
+          <Argument type="Point2D" name="p"/>
+        </Method>
+        <Method name="equals" returnType="boolean" visibility="public">
+          <Argument type="Object" name="obj"/>
+        </Method>
+        <Method name="hashCode" returnType="int" visibility="public"/>
+      </Methods>
+    </Class>
+    <Class name="PotionSoin" package="org.centrale.objet.woe.projettp" visibility="public" xPosition="2120.0" yPosition="420.0">
+      <Fields>
+        <Field name="pVie" type="int" visibility="private"/>
+      </Fields>
+      <Constructors>
+        <Constructor visibility="public"/>
+        <Constructor visibility="public">
+          <Argument type="String" name="nom"/>
+          <Argument type="String" name="description"/>
+          <Argument type="Point2D" name="p"/>
+          <Argument type="int" name="pVie"/>
+        </Constructor>
+        <Constructor visibility="public">
+          <Argument type="int" name="pVie"/>
+          <Argument type="Objet" name="o"/>
+        </Constructor>
+      </Constructors>
+      <Methods>
+        <Method name="getpVie" returnType="int" visibility="public"/>
+        <Method name="setpVie" returnType="void" visibility="public">
+          <Argument type="int" name="pVie"/>
+        </Method>
+      </Methods>
+    </Class>
+    <Class name="TestWoE" package="org.centrale.objet.woe.projettp" visibility="public" xPosition="20.0" yPosition="820.0">
+      <Fields/>
+      <Constructors/>
+      <Methods>
+        <Method name="main" returnType="void" visibility="public" isStatic="true">
+          <Argument type="String[]" name="args"/>
+        </Method>
+      </Methods>
+    </Class>
+  </ClassDiagramComponents>
+  <ClassDiagramRelations>
+    <UseRelation source="org.centrale.objet.woe.projettp.Point2D" target="org.centrale.objet.woe.projettp.Point2D" sourceCardinality="1..1" targetCardinality="1..1"/>
+    <IsRelation name="is" source="org.centrale.objet.woe.projettp.Monstre" target="org.centrale.objet.woe.projettp.Creature"/>
+    <ImplementsRelation name="&lt;&lt;implements&gt;&gt;" source="org.centrale.objet.woe.projettp.NuageToxique" target="org.centrale.objet.woe.projettp.Combattant"/>
+    <UseRelation source="org.centrale.objet.woe.projettp.Objet" target="org.centrale.objet.woe.projettp.Point2D" sourceCardinality="1..1" targetCardinality="1..1"/>
+    <ImplementsRelation name="&lt;&lt;implements&gt;&gt;" source="org.centrale.objet.woe.projettp.Loup" target="org.centrale.objet.woe.projettp.Combattant"/>
+    <ImplementsRelation name="&lt;&lt;implements&gt;&gt;" source="org.centrale.objet.woe.projettp.Creature" target="org.centrale.objet.woe.projettp.Deplacable"/>
+    <UseRelation source="org.centrale.objet.woe.projettp.Guerrier" target="org.centrale.objet.woe.projettp.Creature" sourceCardinality="1..1" targetCardinality="1..1"/>
+    <UseRelation source="org.centrale.objet.woe.projettp.Loup" target="org.centrale.objet.woe.projettp.Point2D" sourceCardinality="1..1" targetCardinality="1..1"/>
+    <IsRelation name="is" source="org.centrale.objet.woe.projettp.Loup" target="org.centrale.objet.woe.projettp.Monstre"/>
+    <ImplementsRelation name="&lt;&lt;implements&gt;&gt;" source="org.centrale.objet.woe.projettp.Guerrier" target="org.centrale.objet.woe.projettp.Combattant"/>
+    <IsRelation name="is" source="org.centrale.objet.woe.projettp.NuageToxique" target="org.centrale.objet.woe.projettp.Objet"/>
+    <ImplementsRelation name="&lt;&lt;implements&gt;&gt;" source="org.centrale.objet.woe.projettp.Archer" target="org.centrale.objet.woe.projettp.Combattant"/>
+    <IsRelation name="is" source="org.centrale.objet.woe.projettp.Creature" target="org.centrale.objet.woe.projettp.ElementDeJeu"/>
+    <IsRelation name="is" source="org.centrale.objet.woe.projettp.Epee" target="org.centrale.objet.woe.projettp.Objet"/>
+    <UseRelation source="org.centrale.objet.woe.projettp.Loup" target="org.centrale.objet.woe.projettp.Creature" sourceCardinality="1..1" targetCardinality="1..1"/>
+    <UseRelation source="org.centrale.objet.woe.projettp.ElementDeJeu" target="org.centrale.objet.woe.projettp.Point2D" sourceCardinality="1..1" targetCardinality="1..1"/>
+    <UseRelation source="org.centrale.objet.woe.projettp.Combattant" target="org.centrale.objet.woe.projettp.Point2D" sourceCardinality="1..1" targetCardinality="1..1"/>
+    <UseRelation source="org.centrale.objet.woe.projettp.Guerrier" target="org.centrale.objet.woe.projettp.Point2D" sourceCardinality="1..1" targetCardinality="1..1"/>
+    <IsRelation name="is" source="org.centrale.objet.woe.projettp.Lapin" target="org.centrale.objet.woe.projettp.Monstre"/>
+    <HasRelation name="pos" source="org.centrale.objet.woe.projettp.ElementDeJeu" target="org.centrale.objet.woe.projettp.Point2D" type="Aggregation" sourceCardinality="1..1" targetCardinality="1..1"/>
+    <IsRelation name="is" source="org.centrale.objet.woe.projettp.Objet" target="org.centrale.objet.woe.projettp.ElementDeJeu"/>
+    <UseRelation source="org.centrale.objet.woe.projettp.Creature" target="org.centrale.objet.woe.projettp.Point2D" sourceCardinality="1..1" targetCardinality="1..1"/>
+    <UseRelation source="org.centrale.objet.woe.projettp.Archer" target="org.centrale.objet.woe.projettp.Creature" sourceCardinality="1..1" targetCardinality="1..1"/>
+    <ImplementsRelation name="&lt;&lt;implements&gt;&gt;" source="org.centrale.objet.woe.projettp.NuageToxique" target="org.centrale.objet.woe.projettp.Deplacable"/>
+    <UseRelation source="org.centrale.objet.woe.projettp.NuageToxique" target="org.centrale.objet.woe.projettp.Point2D" sourceCardinality="1..1" targetCardinality="1..1"/>
+    <IsRelation name="is" source="org.centrale.objet.woe.projettp.PotionSoin" target="org.centrale.objet.woe.projettp.Objet"/>
+    <UseRelation source="org.centrale.objet.woe.projettp.Archer" target="org.centrale.objet.woe.projettp.Point2D" sourceCardinality="1..1" targetCardinality="1..1"/>
+  </ClassDiagramRelations>
+</ClassDiagram>
