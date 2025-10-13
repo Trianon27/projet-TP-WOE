@@ -6,7 +6,6 @@ package org.centrale.objet.woe.projettp;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.Scanner;
 import java.util.Set;
 
@@ -32,7 +31,7 @@ import java.util.Set;
  * </p>
  *
  * @author srodr
- * @version 2.0
+ * @version 3.0 (fusion complète)
  */
 public class Joueur {
 
@@ -60,30 +59,18 @@ public class Joueur {
         this.actionEffectuee = false;
     }
 
-    // ===================== MÉTHODES PRINCIPALES =====================
+    // ===================== MÉTHODE PRINCIPALE =====================
 
     /**
-     * Méthode principale du joueur.
+     * Boucle principale d’action du joueur.
      * <p>
-     * Présente au joueur les différentes actions possibles en fonction de sa
-     * position, de l’environnement et de l’état du monde :
-     * </p>
-     * <ul>
-     *   <li>Se déplacer vers une case libre.</li>
-     *   <li>Attaquer une créature adjacente.</li>
-     *   <li>Interagir avec un objet présent sur la case actuelle.</li>
-     *   <li>Utiliser un objet de l’inventaire.</li>
-     *   <li>Ne rien faire.</li>
-     * </ul>
-     * 
-     * <p>
-     * La méthode fonctionne sous la forme d’un menu interactif qui se répète
-     * tant qu’aucune action n’a été confirmée.
+     * Présente les options disponibles selon la position du héros et les entités présentes :
+     * déplacement, attaque, interaction, utilisation d’objet ou inactivité.
      * </p>
      *
      * @param positionWorld Ensemble des positions actuellement occupées
      * @param creatures Liste des créatures présentes dans le monde
-     * @param objets Liste des objets disponibles sur la carte
+     * @param objets Liste des objets disponibles dans le monde
      */
     public void analyzer(Set<Point2D> positionWorld, List<Creature> creatures, List<Objet> objets) {
         Scanner sc = new Scanner(System.in);
@@ -91,16 +78,16 @@ public class Joueur {
 
         do {
             actionEffectuee = false;
-            System.out.println("Actuellement, vous pouvez :");
+            System.out.println("\nActuellement, vous pouvez :");
 
             List<String> options = new ArrayList<>();
             List<Runnable> actions = new ArrayList<>();
 
-            // ---- 1️⃣ Déplacement ----
+            // 1️⃣ Déplacement
             options.add("Se déplacer");
-            actions.add(() -> deplacerController(positionWorld));
+            actions.add(() -> deplacerController(creatures));
 
-            // ---- 2️⃣ Attaque ----
+            // 2️⃣ Attaque (si cibles proches)
             List<Creature> ciblesAdjacentes = new ArrayList<>();
             for (Creature c : creatures) {
                 double dx = Math.abs(c.getPos().getX() - posHero.getX());
@@ -109,35 +96,34 @@ public class Joueur {
                     ciblesAdjacentes.add(c);
                 }
             }
-
             if (!ciblesAdjacentes.isEmpty()) {
                 options.add("Attaquer");
-                actions.add(() -> attaqueController(ciblesAdjacentes, positionWorld));
+                actions.add(() -> attaqueController(ciblesAdjacentes, positionWorld, creatures));
             }
 
-            // ---- 3️⃣ Interaction avec un objet ----
+            // 3️⃣ Interaction avec un objet présent
             for (Objet o : objets) {
                 if (o.getPosition().equals(posHero)) {
-                    options.add("Interagir");
-                    actions.add(() -> interactionController(o, positionWorld));
+                    options.add("Interagir avec l'objet");
+                    actions.add(() -> interactionController(o, positionWorld, objets));
                     break;
                 }
             }
 
-            // ---- 4️⃣ Utiliser un objet ----
+            // 4️⃣ Utiliser un objet de l’inventaire
             if (!hero.getInventaire().isEmpty()) {
                 options.add("Utiliser un objet de l'inventaire");
                 actions.add(this::utiliserObjetController);
             }
 
-            // ---- 5️⃣ Ne rien faire ----
+            // 5️⃣ Ne rien faire
             options.add("Ne rien faire");
             actions.add(() -> {
                 System.out.println("Vous avez décidé de ne rien faire ce tour.");
                 actionEffectuee = true;
             });
 
-            // Affichage du menu
+            // Afficher les options
             for (int i = 0; i < options.size(); i++) {
                 System.out.println((i + 1) + " - " + options.get(i));
             }
@@ -154,25 +140,21 @@ public class Joueur {
         } while (!actionEffectuee);
     }
 
-    // ===================== CONTRÔLEURS D’ACTIONS =====================
+    // ===================== CONTRÔLEURS =====================
 
     /**
-     * Gère le déplacement du joueur dans le monde.
-     * <p>
-     * Propose un menu directionnel (haut, bas, diagonales) et empêche tout
-     * déplacement sur une case déjà occupée.
-     * </p>
-     *
-     * @param positionWorld Ensemble des positions déjà occupées dans le monde
+     * Gère le déplacement du héros, en vérifiant qu’aucune créature n’occupe la case cible.
+     * 
+     * @param creatures Liste de toutes les créatures pour détecter les collisions
      */
-    public void deplacerController(Set<Point2D> positionWorld) {
+    public void deplacerController(List<Creature> creatures) {
         Scanner sc = new Scanner(System.in);
         boolean choixValide;
 
         do {
             choixValide = true;
-            System.out.println("Choisissez une direction (ou 0 pour revenir) :");
-            System.out.println("1-Haut | 2-Bas | 3-Gauche | 4-Droite | 5-Haut-Gauche | 6-Haut-Droite | 7-Bas-Gauche | 8-Bas-Droite");
+            System.out.println("Vous pouvez vous déplacer d'une case adjacente ou retourner au menu principal.");
+            System.out.println("0-Retour | 1-Haut | 2-Bas | 3-Gauche | 4-Droite | 5-Haut-Gauche | 6-Haut-Droite | 7-Bas-Gauche | 8-Bas-Droite");
 
             int choix = sc.nextInt();
             int dx = 0, dy = 0;
@@ -184,8 +166,8 @@ public class Joueur {
             }
 
             switch (choix) {
-                case 1 -> dy = 1;
-                case 2 -> dy = -1;
+                case 1 -> dy = -1;
+                case 2 -> dy = 1;
                 case 3 -> dx = -1;
                 case 4 -> dx = 1;
                 case 5 -> { dx = -1; dy = 1; }
@@ -196,9 +178,10 @@ public class Joueur {
             }
 
             Point2D newPos = new Point2D(this.hero.getPos().getX() + dx, this.hero.getPos().getY() + dy);
+            boolean bloque = creatures.stream().anyMatch(c -> c.getPos().equals(newPos));
 
-            if (positionWorld.contains(newPos)) {
-                System.out.println("❌ Position occupée !");
+            if (bloque) {
+                System.out.println("❌ Une créature bloque le passage !");
                 choixValide = false;
             } else {
                 this.hero.deplacer(dx, dy);
@@ -210,49 +193,48 @@ public class Joueur {
     }
 
     /**
-     * Gère l’attaque du joueur sur une ou plusieurs créatures adjacentes.
-     * <p>
-     * Vérifie que le héros implémente l’interface {@link Combattant}
-     * avant d’autoriser l’action.
-     * </p>
-     *
-     * @param ciblesAdjacentes liste des créatures adjacentes à attaquer
-     * @param positionWorld ensemble des positions occupées du monde
+     * Gère le système d’attaque du joueur contre les créatures proches.
+     * 
+     * @param ciblesAdjacentes Liste des créatures à portée d’attaque
+     * @param positionWorld Ensemble des positions occupées
+     * @param creatures Liste complète des créatures (pour mise à jour après combat)
      */
-    public void attaqueController(List<Creature> ciblesAdjacentes, Set<Point2D> positionWorld) {
+    public void attaqueController(List<Creature> ciblesAdjacentes, Set<Point2D> positionWorld, List<Creature> creatures) {
         Scanner sc = new Scanner(System.in);
         boolean choixValide;
 
         do {
             choixValide = true;
-            System.out.println("Choisissez une cible à attaquer :");
-
+            System.out.println("Vous pouvez attaquer l'une des créatures adjacentes :");
             for (int i = 0; i < ciblesAdjacentes.size(); i++) {
                 Creature c = ciblesAdjacentes.get(i);
-                System.out.println((i + 1) + " - " + c.getNom() + " à la position " + c.getPos());
+                System.out.println((i + 1) + " - " + c.getNom() + " (" + c.getPtVie() + " PV)");
             }
 
-            System.out.println((ciblesAdjacentes.size() + 1) + " - Ne rien faire");
-            System.out.println((ciblesAdjacentes.size() + 2) + " - Retour");
+            int optionNeRienFaire = ciblesAdjacentes.size() + 1;
+            int optionRetour = ciblesAdjacentes.size() + 2;
 
+            System.out.println(optionNeRienFaire + " - Ne rien faire");
+            System.out.println(optionRetour + " - Retour");
+            System.out.println("Sélectionnez une option :");
             int choix = sc.nextInt();
 
             if (choix > 0 && choix <= ciblesAdjacentes.size()) {
                 Creature cible = ciblesAdjacentes.get(choix - 1);
                 if (hero instanceof Combattant combattant) {
-                    combattant.combattre(cible, positionWorld);
+                    combattant.combattre(cible, positionWorld, creatures);
                     actionEffectuee = true;
                 } else {
                     System.out.println(hero.getNom() + " ne peut pas attaquer !");
                 }
-            } else if (choix == ciblesAdjacentes.size() + 1) {
+            } else if (choix == optionNeRienFaire) {
                 System.out.println("Vous décidez de ne rien faire.");
                 actionEffectuee = true;
-            } else if (choix == ciblesAdjacentes.size() + 2) {
+            } else if (choix == optionRetour) {
                 System.out.println("Retour au menu principal...");
                 actionEffectuee = false;
             } else {
-                System.out.println("Option invalide.");
+                System.out.println("Option invalide !");
                 choixValide = false;
             }
 
@@ -260,19 +242,17 @@ public class Joueur {
     }
 
     /**
-     * Permet d’interagir avec un objet présent sur la même case que le joueur.
-     * <p>
-     * Deux actions possibles :
+     * Gère les interactions avec les objets présents dans le monde :
      * <ul>
-     *   <li>Utiliser immédiatement l’objet.</li>
-     *   <li>L’ajouter à l’inventaire (s’il implémente {@link ObjetUtilisable}).</li>
+     *   <li>Utilisation immédiate de l’objet</li>
+     *   <li>Ajout à l’inventaire (si {@link ObjetUtilisable})</li>
      * </ul>
-     * </p>
      *
-     * @param o objet sur lequel interagir
-     * @param positionWorld ensemble des positions occupées dans le monde
+     * @param o Objet sur la même case que le joueur
+     * @param positionWorld Ensemble des positions occupées
+     * @param objets Liste des objets existants dans le monde (mise à jour en cas de retrait)
      */
-    public void interactionController(Objet o, Set<Point2D> positionWorld) {
+    public void interactionController(Objet o, Set<Point2D> positionWorld, List<Objet> objets) {
         Scanner sc = new Scanner(System.in);
         boolean choixValide = false;
 
@@ -285,18 +265,29 @@ public class Joueur {
             int choix = sc.nextInt();
 
             switch (choix) {
-                case 1 -> { this.hero.prendObjet(o, positionWorld); actionEffectuee = true; choixValide = true; }
+                case 1 -> {
+                    this.hero.prendObjet(o, positionWorld);
+                    objets.remove(o);
+                    actionEffectuee = true;
+                    choixValide = true;
+                }
                 case 2 -> {
                     if (o instanceof ObjetUtilisable) {
                         hero.getInventaire().add(o);
+                        positionWorld.remove(o.getPosition());
+                        objets.remove(o);
                         System.out.println(o.getNom() + " ajouté à l'inventaire.");
                         actionEffectuee = true;
                         choixValide = true;
                     } else {
-                        System.out.println("Cet objet ne peut pas être conservé !");
+                        System.out.println("❌ Cet objet ne peut pas être conservé !");
                     }
                 }
-                case 0 -> { System.out.println("Retour au menu principal..."); actionEffectuee = false; choixValide = true; }
+                case 0 -> {
+                    System.out.println("Retour au menu principal...");
+                    actionEffectuee = false;
+                    choixValide = true;
+                }
                 default -> System.out.println("Option invalide !");
             }
         } while (!choixValide);
@@ -305,8 +296,8 @@ public class Joueur {
     /**
      * Permet au joueur d’utiliser un objet de son inventaire.
      * <p>
-     * Si l’objet est une instance de {@link ObjetUtilisable}, 
-     * son effet est appliqué au héros, puis retiré de l’inventaire.
+     * Si l’objet implémente {@link ObjetUtilisable}, son effet est appliqué au héros
+     * puis l’objet est retiré de l’inventaire.
      * </p>
      */
     public void utiliserObjetController() {
@@ -319,21 +310,29 @@ public class Joueur {
             return;
         }
 
-        System.out.println("Contenu de votre inventaire :");
+        System.out.println("Inventaire :");
         for (int i = 0; i < inventaire.size(); i++) {
             System.out.println((i + 1) + " - " + inventaire.get(i).getNom());
         }
-        System.out.println("Sélectionnez un objet à utiliser ou 0 pour revenir :");
-        int choix = sc.nextInt();
+        System.out.println("0 - Retour");
 
-        if (choix == 0) { System.out.println("Retour..."); actionEffectuee = false; return; }
-        if (choix < 1 || choix > inventaire.size()) { System.out.println("Option invalide !"); return; }
+        int choix = sc.nextInt();
+        if (choix == 0) {
+            System.out.println("Retour...");
+            actionEffectuee = false;
+            return;
+        }
+
+        if (choix < 1 || choix > inventaire.size()) {
+            System.out.println("Option invalide !");
+            return;
+        }
 
         Objet objet = inventaire.get(choix - 1);
         if (objet instanceof ObjetUtilisable objetUtilisable) {
             objetUtilisable.appliquerEffet(hero);
             hero.getInventaire().remove(objet);
-            System.out.println("Vous avez utilisé : " + objet.getNom());
+            System.out.println("✅ Vous avez utilisé : " + objet.getNom());
             actionEffectuee = true;
         } else {
             System.out.println("Cet objet n'est pas utilisable !");
