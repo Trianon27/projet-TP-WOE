@@ -4,6 +4,7 @@
  */
 package org.centrale.objet.woe.projettp;
 
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
@@ -69,7 +70,7 @@ public class Guerrier extends Personnage implements Combattant {
      * @param positionWorld Ensemble des positions occupées dans le monde
      */
     @Override
-    public void combattre(Creature c, Set<Point2D> positionWorld) {
+    public void combattre(Creature c, Set<Point2D> positionWorld,List<Creature> creatures) {
 
         // Vérifie si la cible est à portée d'attaque et si les deux sont vivants
         if (this.getPos().distance(c.getPos()) <= (this.getDistAttMax() * Math.sqrt(2)) && c.isEtat() && this.isEtat()) {
@@ -125,7 +126,7 @@ public class Guerrier extends Personnage implements Combattant {
                 System.out.println();
                 System.out.println("**** " + c.getNom() + " a ete vaincu. ****");
                 System.out.println();
-                c.mourir(positionWorld);
+                c.mourir(positionWorld,creatures);
             }
         }
     }

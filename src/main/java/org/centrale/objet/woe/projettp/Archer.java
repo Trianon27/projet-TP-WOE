@@ -4,6 +4,7 @@
  */
 package org.centrale.objet.woe.projettp;
 
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
@@ -99,7 +100,7 @@ public class Archer extends Personnage implements Combattant {
      */
     
     @Override
-    public void combattre(Creature c, Set<Point2D> positionWorld) {
+    public void combattre(Creature c, Set<Point2D> positionWorld, List<Creature> creatures) {
         // Quitter si aucune flèche restante ou si la cible est déjà morte
         if (!this.isEtat() || !c.isEtat()) {
             return;
@@ -179,7 +180,7 @@ public class Archer extends Personnage implements Combattant {
             System.out.println();
             System.out.println("**** " + c.getNom() + " a ete vaincu. ****");
             System.out.println();
-            c.mourir(positionWorld);
+            c.mourir(positionWorld,creatures);
         }
 
     }
