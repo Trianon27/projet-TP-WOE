@@ -25,46 +25,6 @@ public class World {
 
     // ================= PERSONNAGES =================
     /**
-     * Archer principal du monde
-     */
-    public Archer robin;
-
-    /**
-     * Archer secondaire
-     */
-    public Archer guillaumeT;
-
-    /**
-     * Paysan présent dans le monde
-     */
-    public Paysan peon;
-
-    /**
-     * Guerrier présent dans le monde
-     */
-    public Guerrier grosBill;
-
-    /**
-     * Lapin présent dans le monde
-     */
-    public Lapin bugs;
-
-    /**
-     * Deuxième lapin
-     */
-    public Lapin bugs2;
-
-    /**
-     * Loup présent dans le monde
-     */
-    public Loup wolfie;
-
-    /**
-     * Potion de soin présente dans le monde
-     */
-    public PotionSoin potionV;
-
-    /**
      * Taille (dimension maximale) du monde 2D
      */
     public int TAILLE_MONDE;
@@ -72,6 +32,11 @@ public class World {
     public ArrayList<Creature> ListCreature;
 
     public LinkedList<Objet> ListObjets;
+    
+    public ArrayList<Analyze> ListAnalyze; 
+    
+    public ArrayList<ElementDeJeu> ListElementJeu; 
+    
 
     // ================= POSITIONS =================
     /**
@@ -85,27 +50,10 @@ public class World {
      * valeurs de base et l’ensemble des positions occupées.
      */
     public World() {
-        Point2D p = new Point2D(0, 0);
-        robin = new Archer("Robin", true, 100, 80, 20, 80, 50, p, 2, 5, 10);
-        guillaumeT = new Archer(robin);
-        guillaumeT.setNom("GuillaumeT");
-
-        Point2D p2 = new Point2D(1, 1);
-        grosBill = new Guerrier("grosBill", true, 100, 80, 20, 80, 50, p2, 1, 3);
-
-        peon = new Paysan("Paysan", true, 100, 100, 100, 100, 100, 100, p, 5);
-
-        bugs = new Lapin("Lapin", true, 100, 100, 100, 100, 100, p, 1, 3, Monstre.Dangerosite.DOCILE);
-        bugs2 = new Lapin(bugs);
-
-        Point2D p3 = new Point2D(0, 1);
-        wolfie = new Loup("Loup", true, 100, 10, 10, 50, 50, p3, 1, 3, Monstre.Dangerosite.DANGEREUX);
-
-        potionV = new PotionSoin("Potion de Vie", "Potion tres forte", p3, 20);
-
         positionsOccupees = new HashSet<>();
         TAILLE_MONDE = 20;
-
+        this.ListElementJeu = new ArrayList<>(); 
+        this.ListAnalyze = new ArrayList<>();
         this.ListCreature = new ArrayList<>();
         this.ListObjets = new LinkedList<>();
 
@@ -190,17 +138,340 @@ public class World {
      */
     public void creerMondeAlea() {
         Random rand = new Random();
-        positionsOccupees.clear();
-        robin.setPos(positionAleatoire(rand));
-        peon.setPos(positionAleatoire(rand));
-        bugs.setPos(positionAleatoire(rand));
-        guillaumeT.setPos(positionAleatoire(rand));
+        generationCreatures(40, rand, this.ListCreature);
+        generationObjets(40, rand, this.ListObjets);
+        for(ElementDeJeu item: this.ListElementJeu){
+            if(item instanceof Analyze analyze){
+                this.ListAnalyze.add(analyze);
+            }
+        }
+    }
 
-        generationCreatures(10, rand, this.ListCreature);
-        generationObjets(10, rand, this.ListObjets);
+    /**
+     * Génère un ensemble de créatures aléatoires et les ajoute à une
+     * collection.
+     *
+     * @param maxCreatures nombre maximum de créatures à générer
+     * @param rand générateur de nombres aléatoires
+     * @param collectionCreature collection où ajouter les créatures
+     */
+    private void generationCreatures(int maxCreatures, Random rand, Collection<Creature> collectionCreature) {
+        for (int i = 0; i < maxCreatures; i++) {
+            Point2D cPoint = positionAleatoire(rand);
+            int randint = rand.nextInt(2);
+            int id = i + 1;
+            switch (randint) {
+                case 0 -> {
+                    Creature nCreature = GenerationP(id, cPoint);
+                    collectionCreature.add(nCreature);
+                    this.ListElementJeu.add(nCreature);
+                }   
+                case 1-> {
+                    Creature nCreature = GenerationM(id, cPoint);
+                    collectionCreature.add(nCreature);
+                    this.ListElementJeu.add(nCreature);
+                }
+            }
+        }
+    }
 
-        //afficheListes(ListCreature, ListObjets);
-        //affichePointDeVieParTaille(ListCreature);
+    /**
+     * Génère un ensemble d’objets aléatoires et les ajoute à une collection.
+     *
+     * @param maxObjets nombre maximum d’objets à générer
+     * @param rand générateur de nombres aléatoires
+     * @param collectionObjet collection où ajouter les objets
+     */
+    private void generationObjets(int maxObjets, Random rand, Collection<Objet> collectionObjet) {
+        for (int i = 0; i < maxObjets; i++) {
+            int id = i + 1;
+            Point2D cPoint = positionAleatoire(rand);
+            Objet nObjet = GenerationO(id, cPoint);
+            collectionObjet.add(nObjet);
+            this.ListElementJeu.add(nObjet);      
+        }
+    }
+
+    /**
+     * Génère une position libre non encore occupée.
+     *
+     * @param rand générateur aléatoire
+     * @return une position Point2D unique dans le monde
+     */
+    private Point2D positionAleatoire(Random rand) {
+        Point2D p;
+        do {
+            int x = rand.nextInt(TAILLE_MONDE);
+            int y = rand.nextInt(TAILLE_MONDE);
+            p = new Point2D(x, y);
+        } while (positionsOccupees.contains(p));
+        positionsOccupees.add(p);
+        return p;
+    }
+
+    /**
+     * Retourne l’ensemble des positions actuellement occupées dans le monde.
+     *
+     * @return ensemble des positions occupées
+     */
+    public Set<Point2D> getPositionsOccupees() {
+        return positionsOccupees;
+    }
+
+    /**
+     * Effectue une simulation de plusieurs tours : à chaque tour, tous les
+     * personnages se déplacent aléatoirement.
+     *
+     * @param nbTours nombre de tours à exécuter
+     * @param moi
+     */
+    public void tourDeJour(int nbTours, Joueur moi) {
+    for (int t = 0; t < nbTours; t++) {
+        System.out.println("===== TOUR " + (t + 1) + " =====");
+
+        // Le joueur analyse son environnement et agit
+        moi.analyzer(this.positionsOccupees, this.ListCreature, this.ListObjets, TAILLE_MONDE);
+
+        // Chaque créature effectue son propre tour d’analyse
+        for (Analyze e : this.ListAnalyze) {
+            if (e != null) { // seulement les créatures vivantes
+                e.analyzer(this.positionsOccupees, this.ListCreature, this.ListObjets, TAILLE_MONDE);
+            }
+        }
+
+        // Mise à jour de l’affichage du monde
+        afficheWorld(moi);
+    }
+}
+
+    /**
+     * Affiche l’état complet du monde (personnages, monstres et objets
+     * principaux).
+     *
+     * @param moi
+     */
+    public void afficheWorld(Joueur moi) {
+        int taille = TAILLE_MONDE;
+        char[][] monde = new char[taille][taille];
+
+        // 1️⃣ Initialiser le monde avec des cases vides
+        for (int i = 0; i < taille; i++) {
+            for (int j = 0; j < taille; j++) {
+                monde[i][j] = '.';
+            }
+        }
+
+        // 2️⃣ Placer toutes les créatures du monde
+        if (ListCreature != null) {
+            for (Creature c : ListCreature) {
+                if (c != null && c.getPos() != null) {
+                    placerDansMonde(monde, c, getSymbolePourCreature(c));
+                }
+            }
+        }
+
+        // 3️⃣ Placer tous les objets du monde
+        if (ListObjets != null) {
+            for (Objet o : ListObjets) {
+                if (o != null && o.getPos() != null) {
+                    placerDansMonde(monde, o, getSymbolePourObjet(o));
+                }
+            }
+        }
+
+        // 4️⃣ Placer le héros (joueur)
+        placerDansMonde(monde, moi.hero, 'S');
+
+        // 5️⃣ Afficher la zone visible selon la vision du héros
+        afficherZoneVisible(monde, moi.hero);
+
+        // 6️⃣ Afficher les statistiques du héros
+        System.out.println();
+        System.out.println("=== STATS DU HÉROS ===");
+        moi.hero.affiche();
+        System.out.println("=======================");
+    }
+
+    /**
+     * Méthode pour placer un élément sur la carte
+     */
+    private void placerDansMonde(char[][] monde, ElementDeJeu element, char symbole) {
+        int x = element.getPos().getX();
+        int y = element.getPos().getY();
+
+        if (x >= 0 && x < monde[0].length && y >= 0 && y < monde.length) {
+            monde[y][x] = symbole;
+        }
+    }
+
+    /**
+     * Détermine le symbole d'une créature selon son type
+     */
+    private char getSymbolePourCreature(Creature c) {
+        if (c instanceof Archer) {
+            return 'A';
+        }
+        if (c instanceof Guerrier) {
+            return 'G';
+        }
+        if (c instanceof Loup) {
+            return 'W';
+        }
+        if (c instanceof Paysan) {
+            return 'P';
+        }
+        if (c instanceof Lapin) {
+            return 'L';
+        }
+        return 'C'; // par défaut : "C" pour "Créature"
+    }
+
+    /**
+     * Détermine le symbole d’un objet selon son type
+     */
+    private char getSymbolePourObjet(Objet o) {
+        if (o instanceof PotionSoin) {
+            return 'O';
+        }
+        if (o instanceof Nourriture) {
+            return 'N';
+        }
+        if (o instanceof Epee) {
+            return 'E';
+        }
+        if (o instanceof NuageToxique) {
+            return 'X';
+        }
+        return '?'; // objet inconnu
+    }
+
+    /**
+     * Affiche uniquement la zone visible autour du héros
+     */
+    private void afficherZoneVisible(char[][] monde, Creature hero) {
+        int vision = hero.getDistanceVision();
+        int xHero = hero.getPos().getX();
+        int yHero = hero.getPos().getY();
+
+        System.out.println("\n=== MONDE VISIBLE ===");
+
+        for (int y = yHero - vision; y <= yHero + vision; y++) {
+            for (int x = xHero - vision; x <= xHero + vision; x++) {
+                if (y >= 0 && y < monde.length && x >= 0 && x < monde[0].length) {
+                    System.out.print(monde[y][x] + " ");
+                } else {
+                    System.out.print("*"); // bordure hors du monde
+                }
+            }
+            System.out.println();
+        }
+    }
+
+    /**
+     * Génère un personnage aléatoire (Archer, Paysan ou Guerrier).
+     *
+     * @param id identifiant du personnage
+     * @param p position dans le monde
+     * @return une instance de Personnage
+     */
+    private Personnage GenerationP(int id, Point2D p) {
+        Random randomGen = new Random();
+        int randint = randomGen.nextInt(3);
+        return switch (randint) {
+            case 0 ->
+                new Archer("Archer " + id, true, 100, 80, 20, 80, 50, p, 2, 5, 10);
+            case 1 ->
+                new Paysan("Paysan " + id, true, 100, 100, 100, 100, 100, 100, p, 5);
+            case 2 ->
+                new Guerrier("Guerrier " + id, true, 100, 80, 20, 80, 50, p, 1, 3);
+            default ->
+                null;
+        };
+    }
+
+    /**
+     * Génère un monstre aléatoire (Lapin ou Loup).
+     *
+     * @param id identifiant du monstre
+     * @param p position dans le monde
+     * @return une instance de Monstre
+     */
+    private Monstre GenerationM(int id, Point2D p) {
+        Random rand = new Random();
+        int randint = rand.nextInt(2);
+        return switch (randint) {
+            case 0 ->
+                new Lapin("Lapin " + id, true, 50, 20, 5, 10, 10, p, 1, 2, Monstre.Dangerosite.DOCILE);
+            case 1 ->
+                new Loup("Loup " + id, true, 80, 30, 15, 20, 30, p, 1, 4, Monstre.Dangerosite.MOYENNE);
+            case 2 ->
+                new Loup("Dieux Loup" + id, true, 100, 50, 100, 60, 60, p, 2, 5, Monstre.Dangerosite.DANGEREUX);
+            default ->
+                null;
+        };
+    }
+
+    /**
+     * Génère un objet aléatoire (PotionSoin ou Épée).
+     *
+     * @param id identifiant de l’objet
+     * @param p position dans le monde
+     * @return une instance d’Objet
+     */
+    private Objet GenerationO(int id, Point2D p) {
+        Random rand = new Random();
+        int randint = rand.nextInt(7);
+        return switch (randint) {
+            case 0 ->
+                new PotionSoin("Potion " + id, "Potion magique", p, 20);
+            case 1 ->
+                new Epee("Epe " + id, "Epee en acier", p, 15, Epee.Etat.NONE);
+            case 2 ->
+                new Nourriture(Nourriture.Nourritures.ALCOHOOL, "Alcohool", "tres fort", p);
+            case 3 ->
+                new Nourriture(Nourriture.Nourritures.LEGUMBRE, "Legumbre", "Bon sante", p);
+            case 4 ->
+                new Nourriture(Nourriture.Nourritures.BOISSONRICHE, "Boisson riche", "????", p);
+            case 5 ->
+                new Nourriture(Nourriture.Nourritures.POMMEDOR, "Pomme d'or", "OMG", p);
+            case 6 ->
+                new NuageToxique("NuageT " + id, "Tres fort", p, rand.nextInt(10) + 1, rand.nextInt(3) + 1, rand.nextInt(11) + 1);
+            default ->
+                null;
+        };
+    }
+
+    //========================METHODES DE LAB============================================//
+    /**
+     * Calcule et affiche le total des points de vie d’une liste de créatures en
+     * parcourant via des indices (méthode adaptée aux List).
+     *
+     * @param creatures liste de créatures
+     */
+    private void affichePointDeVieParTaille(List<Creature> creatures) {
+        int ptVieTotal = 0;
+        for (int i = 0; i < creatures.size(); i++) {
+            ptVieTotal += creatures.get(i).getPtVie();
+        }
+        System.out.println("====== TOTAL POINTS DE VIE =====");
+        System.out.println("Points de vie total : " + ptVieTotal);
+        System.out.println("==================");
+    }
+
+    /**
+     * Calcule et affiche le total des points de vie d’une collection de
+     * créatures en utilisant des itérateurs/for-each.
+     *
+     * @param creatures collection de créatures
+     */
+    private void affichePointDeVieParIterateurs(Collection<Creature> creatures) {
+        int ptVieTotal = 0;
+        for (Creature c : creatures) {
+            ptVieTotal += c.getPtVie();
+        }
+        System.out.println("====== TOTAL POINTS DE VIE =====");
+        System.out.println("Points de vie total : " + ptVieTotal);
+        System.out.println("==================");
     }
 
     /**
@@ -272,270 +543,6 @@ public class World {
     }
 
     /**
-     * Génère un ensemble de créatures aléatoires et les ajoute à une
-     * collection.
-     *
-     * @param maxCreatures nombre maximum de créatures à générer
-     * @param rand générateur de nombres aléatoires
-     * @param collectionCreature collection où ajouter les créatures
-     */
-    private void generationCreatures(int maxCreatures, Random rand, Collection<Creature> collectionCreature) {
-        for (int i = 0; i < maxCreatures; i++) {
-            Point2D cPoint = positionAleatoire(rand);
-            int randint = rand.nextInt(2);
-            int id = i + 1;
-            switch (randint) {
-                case 0 ->
-                    collectionCreature.add(GenerationP(id, cPoint));
-                case 1 ->
-                    collectionCreature.add(GenerationM(id, cPoint));
-            }
-        }
-    }
-
-    /**
-     * Génère un ensemble d’objets aléatoires et les ajoute à une collection.
-     *
-     * @param maxObjets nombre maximum d’objets à générer
-     * @param rand générateur de nombres aléatoires
-     * @param collectionObjet collection où ajouter les objets
-     */
-    private void generationObjets(int maxObjets, Random rand, Collection<Objet> collectionObjet) {
-        for (int i = 0; i < maxObjets; i++) {
-            int id = i + 1;
-            Point2D cPoint = positionAleatoire(rand);
-            collectionObjet.add(GenerationO(id, cPoint));
-        }
-    }
-
-    /**
-     * Génère une position libre non encore occupée.
-     *
-     * @param rand générateur aléatoire
-     * @return une position Point2D unique dans le monde
-     */
-    private Point2D positionAleatoire(Random rand) {
-        Point2D p;
-        do {
-            int x = rand.nextInt(TAILLE_MONDE);
-            int y = rand.nextInt(TAILLE_MONDE);
-            p = new Point2D(x, y);
-        } while (positionsOccupees.contains(p));
-        positionsOccupees.add(p);
-        return p;
-    }
-
-    /**
-     * Effectue une simulation de plusieurs tours : à chaque tour, tous les
-     * personnages se déplacent aléatoirement.
-     *
-     * @param nbTours nombre de tours à exécuter
-     * @param moi
-     */
-    public void tourDeJour(int nbTours, Joueur moi) {
-        for (int t = 0; t < nbTours; t++) {
-            moi.analyzer(this.positionsOccupees, this.ListCreature, this.ListObjets);
-            robin.deplaceAleatoire();
-            guillaumeT.deplaceAleatoire();
-            peon.deplaceAleatoire();
-            bugs.deplaceAleatoire();
-
-            afficheWorld(moi);
-        }
-    }
-
-    /**
-     * Retourne l’ensemble des positions actuellement occupées dans le monde.
-     *
-     * @return ensemble des positions occupées
-     */
-    public Set<Point2D> getPositionsOccupees() {
-        return positionsOccupees;
-    }
-
-    /**
-     * Affiche l’état complet du monde (personnages, monstres et objets
-     * principaux).
-     *
-     * @param moi
-     */
-    public void afficheWorld(Joueur moi) {
-        int taille = TAILLE_MONDE;
-        char[][] monde = new char[taille][taille];
-
-        // 1️⃣ Initialiser le monde avec des cases vides
-        for (int i = 0; i < taille; i++) {
-            for (int j = 0; j < taille; j++) {
-                monde[i][j] = '.'; 
-            }
-        }
-
-        // 2️⃣ Placer toutes les créatures du monde
-        if (ListCreature != null) {
-            for (Creature c : ListCreature) {
-                if (c != null && c.getPos() != null) {
-                    placerDansMonde(monde, c, getSymbolePourCreature(c));
-                }
-            }
-        }
-
-        // 3️⃣ Placer tous les objets du monde
-        if (ListObjets != null) {
-            for (Objet o : ListObjets) {
-                if (o != null && o.getPos() != null) {
-                    placerDansMonde(monde, o, getSymbolePourObjet(o));
-                }
-            }
-        }
-
-        // 4️⃣ Placer le héros (joueur)
-        placerDansMonde(monde, moi.hero, 'S');
-
-        // 5️⃣ Afficher la zone visible selon la vision du héros
-        afficherZoneVisible(monde, moi.hero);
-
-        // 6️⃣ Afficher les statistiques du héros
-        System.out.println();
-        System.out.println("=== STATS DU HÉROS ===");
-        moi.hero.affiche();
-        System.out.println("=======================");
-    }
-
-    /**
-     * Méthode pour placer un élément sur la carte
-     */
-    private void placerDansMonde(char[][] monde, ElementDeJeu element, char symbole) {
-        int x = element.getPos().getX();
-        int y = element.getPos().getY();
-
-        if (x >= 0 && x < monde[0].length && y >= 0 && y < monde.length) {
-            monde[y][x] = symbole;
-        }
-    }
-
-    /**
-     * Détermine le symbole d'une créature selon son type
-     */
-    private char getSymbolePourCreature(Creature c) {
-        if (c instanceof Archer) {
-            return 'A';
-        }
-        if (c instanceof Guerrier) {
-            return 'G';
-        }
-        if (c instanceof Loup) {
-            return 'W';
-        }
-        if (c instanceof Paysan) {
-            return 'P';
-        }
-        if (c instanceof Monstre) {
-            return 'M';
-        }
-        return 'C'; // par défaut : "C" pour "Créature"
-    }
-
-    /**
-     * Détermine le symbole d’un objet selon son type
-     */
-    private char getSymbolePourObjet(Objet o) {
-        if (o instanceof PotionSoin) {
-            return 'O';
-        }
-        if (o instanceof Nourriture) {
-            return 'N';
-        }
-        if (o instanceof Epee) {
-            return 'E';
-        }
-        return '?'; // objet inconnu
-    }
-
-    /**
-     * Affiche uniquement la zone visible autour du héros
-     */
-    private void afficherZoneVisible(char[][] monde, Creature hero) {
-        int vision = hero.getDistanceVision();
-        int xHero = hero.getPos().getX();
-        int yHero = hero.getPos().getY();
-
-        System.out.println("\n=== MONDE VISIBLE ===");
-
-        for (int y = yHero - vision; y <= yHero + vision; y++) {
-            for (int x = xHero - vision; x <= xHero + vision; x++) {
-                if (y >= 0 && y < monde.length && x >= 0 && x < monde[0].length) {
-                    System.out.print(monde[y][x] + " ");
-                } else {
-                    System.out.print("*"); // bordure hors du monde
-                }
-            }
-            System.out.println();
-        }
-    }
-
-    /**
-     * Génère un personnage aléatoire (Archer, Paysan ou Guerrier).
-     *
-     * @param id identifiant du personnage
-     * @param p position dans le monde
-     * @return une instance de Personnage
-     */
-    private Personnage GenerationP(int id, Point2D p) {
-        Random randomGen = new Random();
-        int randint = randomGen.nextInt(3);
-        return switch (randint) {
-            case 0 ->
-                new Archer("Archer " + id, true, 100, 80, 20, 80, 50, p, 2, 5, 10);
-            case 1 ->
-                new Paysan("Paysan " + id, true, 100, 100, 100, 100, 100, 100, p, 5);
-            case 2 ->
-                new Guerrier("Guerrier " + id, true, 100, 80, 20, 80, 50, p, 1, 3);
-            default ->
-                null;
-        };
-    }
-
-    /**
-     * Génère un monstre aléatoire (Lapin ou Loup).
-     *
-     * @param id identifiant du monstre
-     * @param p position dans le monde
-     * @return une instance de Monstre
-     */
-    private Monstre GenerationM(int id, Point2D p) {
-        Random rand = new Random();
-        int randint = rand.nextInt(2);
-        return switch (randint) {
-            case 0 ->
-                new Lapin("Lapin " + id, true, 50, 20, 5, 10, 10, p, 1, 2, Monstre.Dangerosite.DOCILE);
-            case 1 ->
-                new Loup("Loup " + id, true, 80, 30, 15, 20, 30, p, 2, 4, Monstre.Dangerosite.DANGEREUX);
-            default ->
-                null;
-        };
-    }
-
-    /**
-     * Génère un objet aléatoire (PotionSoin ou Épée).
-     *
-     * @param id identifiant de l’objet
-     * @param p position dans le monde
-     * @return une instance d’Objet
-     */
-    private Objet GenerationO(int id, Point2D p) {
-        Random rand = new Random();
-        int randint = rand.nextInt(2);
-        return switch (randint) {
-            case 0 ->
-                new PotionSoin("Potion " + id, "Potion magique", p, 20);
-            case 1 ->
-                new Epee("Epe " + id, "Epee en acier", p, 15, Epee.Etat.NONE);
-            default ->
-                null;
-        };
-    }
-
-    /**
      * Affiche toutes les créatures et objets générés dans le monde, ainsi que
      * leur comptage total par type.
      *
@@ -565,38 +572,6 @@ public class World {
         for (Map.Entry<Class<?>, Integer> entry : counter.entrySet()) {
             System.out.println(entry.getKey().getSimpleName() + ": " + entry.getValue());
         }
-        System.out.println("==================");
-    }
-
-    /**
-     * Calcule et affiche le total des points de vie d’une liste de créatures en
-     * parcourant via des indices (méthode adaptée aux List).
-     *
-     * @param creatures liste de créatures
-     */
-    private void affichePointDeVieParTaille(List<Creature> creatures) {
-        int ptVieTotal = 0;
-        for (int i = 0; i < creatures.size(); i++) {
-            ptVieTotal += creatures.get(i).getPtVie();
-        }
-        System.out.println("====== TOTAL POINTS DE VIE =====");
-        System.out.println("Points de vie total : " + ptVieTotal);
-        System.out.println("==================");
-    }
-
-    /**
-     * Calcule et affiche le total des points de vie d’une collection de
-     * créatures en utilisant des itérateurs/for-each.
-     *
-     * @param creatures collection de créatures
-     */
-    private void affichePointDeVieParIterateurs(Collection<Creature> creatures) {
-        int ptVieTotal = 0;
-        for (Creature c : creatures) {
-            ptVieTotal += c.getPtVie();
-        }
-        System.out.println("====== TOTAL POINTS DE VIE =====");
-        System.out.println("Points de vie total : " + ptVieTotal);
         System.out.println("==================");
     }
 
