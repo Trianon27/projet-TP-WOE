@@ -8,6 +8,10 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 /**
  * La classe {@code Guerrier} représente un personnage combattant au corps à corps.
  * <p>
@@ -151,4 +155,17 @@ public class Guerrier extends Personnage implements Combattant {
         Random n = new Random();
         return n.nextInt(100) < c.getPagePar();
     }
+    
+    
+    
+    public void saveGuerrier(Connection conn, int idPersonnage) {
+        try (PreparedStatement ps = conn.prepareStatement(
+            "INSERT INTO Guerrier (id_personnage) VALUES (?)")) {
+            ps.setInt(1, idPersonnage);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println("Erreur Guerrier.saveGuerrier : " + e.getMessage());
+        }
+    }
+
 }

@@ -7,7 +7,9 @@ package org.centrale.objet.woe.projettp;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
-
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 /**
  * La classe {@code Loup} représente un monstre de type loup dans le jeu.
  * <p>
@@ -148,4 +150,33 @@ public class Loup extends Monstre implements Combattant {
         Random n = new Random();
         return n.nextInt(100) < c.getPagePar();
     }
+    
+    
+
+    public void saveToDB(Connection conn, int idPartie) {
+        try (PreparedStatement ps = conn.prepareStatement("""
+            INSERT INTO Loup (
+                nom, ptVie, degAtt, ptPar, pourcentageAtt,
+                pourcentagePar, distAttMax, distVue, posX, posY,
+                dangerosite, id_partie
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """)) {
+            ps.setString(1, this.getNom());
+            ps.setInt(2, this.getPtVie());
+            ps.setInt(3, this.getDegAtt());
+            ps.setInt(4, this.getPtPar());
+            ps.setInt(5, this.getPageAtt());
+            ps.setInt(6, this.getPagePar());
+            ps.setInt(7, this.getDistAttMax());
+            ps.setInt(8, this.getDistanceVision());
+            ps.setInt(9, this.getPos().getX());
+            ps.setInt(10, this.getPos().getY());
+            ps.setString(11, this.getDangerosite().toString());
+            ps.setInt(12, idPartie);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println("Erreur Loup.saveToDB : " + e.getMessage());
+        }
+    }
+
 }

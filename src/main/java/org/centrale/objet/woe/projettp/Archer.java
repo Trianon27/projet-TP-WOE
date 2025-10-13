@@ -7,7 +7,10 @@ package org.centrale.objet.woe.projettp;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
-
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 /**
  * La classe {@code Archer} représente un personnage spécialisé dans l’attaque à
  * distance avec des flèches.
@@ -218,4 +221,15 @@ public class Archer extends Personnage implements Combattant {
         System.out.println("Le nbr de fleches : " + this.nbFleches);
     }
 
+    public void saveArcher(Connection conn, int idPersonnage) {
+        try (PreparedStatement ps = conn.prepareStatement(
+            "INSERT INTO Archer (id_personnage, nbFleches) VALUES (?, ?)")) {
+            ps.setInt(1, idPersonnage);
+            ps.setInt(2, this.getNbFleches());
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println("Erreur Archer.saveArcher : " + e.getMessage());
+        }
+    }
 }
+

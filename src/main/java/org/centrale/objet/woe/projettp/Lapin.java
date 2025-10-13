@@ -3,7 +3,9 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package org.centrale.objet.woe.projettp;
-
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 /**
  * La classe {@code Lapin} représente un monstre de type lapin dans le jeu.
  * <p>
@@ -55,4 +57,33 @@ public class Lapin extends Monstre {
     public Lapin() {
         super();
     }
+    
+    
+
+
+    public void saveToDB(Connection conn, int idPartie) {
+        try (PreparedStatement ps = conn.prepareStatement("""
+            INSERT INTO Lapin (
+                nom, ptVie, degAtt, ptPar, pourcentageAtt,
+                pourcentagePar, distAttMax, distVue, posX, posY,
+                id_partie
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """)) {
+            ps.setString(1, this.getNom());
+            ps.setInt(2, this.getPtVie());
+            ps.setInt(3, this.getDegAtt());
+            ps.setInt(4, this.getPtPar());
+            ps.setInt(5, this.getPageAtt());
+            ps.setInt(6, this.getPagePar());
+            ps.setInt(7, this.getDistAttMax());
+            ps.setInt(8, this.getDistanceVision());
+            ps.setInt(9, this.getPos().getX());
+            ps.setInt(10, this.getPos().getY());
+            ps.setInt(11, idPartie);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println("Erreur Lapin.saveToDB : " + e.getMessage());
+        }
+    }
+
 }

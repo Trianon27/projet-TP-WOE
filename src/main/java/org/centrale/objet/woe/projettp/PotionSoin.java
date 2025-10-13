@@ -3,7 +3,9 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package org.centrale.objet.woe.projettp;
-
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 /**
  * La classe {@code PotionSoin} représente une potion qui restaure des points de vie.
  * <p>
@@ -72,4 +74,24 @@ public class PotionSoin extends Objet {
     public void setpVie(int pVie) {
         this.pVie = pVie;
     }
+    
+    
+
+    public void saveToDB(Connection conn, int idPartie) {
+        try (PreparedStatement ps = conn.prepareStatement("""
+            INSERT INTO PotionSoin (nom, description, posX, posY, valeur, id_partie)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """)) {
+            ps.setString(1, this.getNom());
+            ps.setString(2, this.getDescription());
+            ps.setInt(3, this.getPos().getX());
+            ps.setInt(4, this.getPos().getY());
+            ps.setInt(5, this.getpVie());
+            ps.setInt(6, idPartie);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println("Erreur PotionSoin.saveToDB : " + e.getMessage());
+        }
+    }
+
 }

@@ -4,6 +4,10 @@
  */
 package org.centrale.objet.woe.projettp;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 /**
  * La classe {@code Paysan} représente un personnage paysan dans le jeu.
  * <p>
@@ -48,4 +52,18 @@ public class Paysan extends Personnage {
     public Paysan() {
         super();
     }
-}
+    
+    
+
+    public void savePaysan(Connection conn, int idPersonnage) {
+        try (PreparedStatement ps = conn.prepareStatement(
+            "INSERT INTO Paysan (id_personnage) VALUES (?)")) {
+            ps.setInt(1, idPersonnage);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println("Erreur Paysan.savePaysan : " + e.getMessage());
+        }
+    }
+
+
+    }

@@ -27,26 +27,26 @@ public class Creature extends ElementDeJeu implements Deplacable {
     private boolean etat; 
 
     /** Points de vie de la créature */
-    private int ptVie;
+    protected int ptVie;
 
     /** Dégâts infligés lors d’une attaque */
-    private int degAtt;
+    protected int degAtt;
 
     /** Points de parade permettant de réduire les dégâts reçus */
-    private int ptPar;
+    protected int ptPar;
 
     /** Pourcentage de réussite d’attaque */
-    private int pageAtt;
+    protected int pageAtt;
 
     /** Pourcentage de réussite de parade */
-    private int pagePar;
+    protected int pagePar;
     
     /** Distance maximale d’attaque */
-    private int distAttMax;
+    protected int distAttMax;
 
     
     /** Distance de vision de la créature */
-    private int distanceVision; 
+    protected int distanceVision; 
 
     // ================= CONSTRUCTEURS =================
 

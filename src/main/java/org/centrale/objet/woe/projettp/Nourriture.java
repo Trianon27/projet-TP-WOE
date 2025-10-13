@@ -1,5 +1,7 @@
 package org.centrale.objet.woe.projettp;
-
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 /**
  * Classe représentant une Nourriture pouvant être utilisée par un Personnage.
  * Elle applique un effet temporaire (bonus/malus) sur certaines
@@ -200,5 +202,26 @@ public class Nourriture extends Objet implements ObjetUtilisable {
     @Override
     public boolean estActif() {
         return coolDown > 0;
+    }
+    
+
+    public void saveToDB(Connection conn, int idPartie) {
+        String sql = """
+            INSERT INTO Nourriture (nom, description, posX, posY, id_partie)
+            VALUES (?, ?, ?, ?, ?)
+        """;
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, this.getNom());
+            ps.setString(2, this.getDescription());
+            ps.setInt(3, this.getPos().getX());
+            ps.setInt(4, this.getPos().getY());
+            ps.setInt(5, idPartie);
+            ps.executeUpdate();
+
+            System.out.println("✅ Nourriture insérée en base");
+        } catch (SQLException e) {
+            System.err.println("Erreur Nourriture.saveToDB : " + e.getMessage());
+        }
     }
 }

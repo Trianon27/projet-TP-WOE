@@ -3,7 +3,9 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package org.centrale.objet.woe.projettp;
-
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 /**
  * La classe {@code Epee} représente une épée dans le jeu.
  * <p>
@@ -115,4 +117,24 @@ public class Epee extends Objet {
     public void setpAtt(int pAtt) {
         this.pAtt = pAtt;
     }
+    
+
+
+public void saveToDB(Connection conn, int idPartie) {
+    try (PreparedStatement ps = conn.prepareStatement("""
+        INSERT INTO Epee (nom, description, posX, posY, id_partie)
+        VALUES (?, ?, ?, ?, ?)
+    """)) {
+        ps.setString(1, this.getNom());
+        ps.setString(2, this.getDescription());
+        ps.setInt(3, this.getPos().getX());
+        ps.setInt(4, this.getPos().getY());
+        ps.setInt(5, idPartie);
+        ps.executeUpdate();
+    } catch (SQLException e) {
+        System.err.println("Erreur Epee.saveToDB : " + e.getMessage());
+    }
 }
+
+}
+

@@ -1,6 +1,10 @@
 package org.centrale.objet.woe.projettp;
 
 import java.util.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /**
  * Représente le monde du jeu WoE avec ses personnages, créatures et objets.
@@ -326,23 +330,32 @@ public class World {
     }
 
     /**
-     * Effectue une simulation de plusieurs tours : à chaque tour, tous les
-     * personnages se déplacent aléatoirement.
+     * Effectue une simulation de plusieurs tours : à chaque tour, le joueur agit
+     * et les autres créatures se déplacent aléatoirement.
      *
      * @param nbTours nombre de tours à exécuter
-     * @param moi
+     * @param joueur joueur principal
+     * @param conn connexion à la base PostgreSQL
      */
-    public void tourDeJour(int nbTours, Joueur moi) {
+    public void tourDeJour(int nbTours, Joueur joueur, Connection conn) {
         for (int t = 0; t < nbTours; t++) {
-            moi.analyzer(this.positionsOccupees, this.ListCreature, this.ListObjets);
+            System.out.println("\n===== TOUR " + (t + 1) + " =====");
+
+            // Le joueur choisit une action
+            joueur.analyzer(this.positionsOccupees, this.ListCreature, this.ListObjets, this, conn);
+
+            // Les autres entités se déplacent aléatoirement
             robin.deplaceAleatoire();
             guillaumeT.deplaceAleatoire();
             peon.deplaceAleatoire();
             bugs.deplaceAleatoire();
+            wolfie.deplaceAleatoire();
 
-            afficheWorld(moi);
+            // Affichage du monde après le tour
+            afficheWorld(joueur);
         }
     }
+
 
     /**
      * Retourne l’ensemble des positions actuellement occupées dans le monde.
@@ -599,5 +612,136 @@ public class World {
         System.out.println("Points de vie total : " + ptVieTotal);
         System.out.println("==================");
     }
+    
+    
+    public void saveWorldToDB(Connection conn, Joueur joueur) {
+        try {
+            // ===============================
+            // 1️⃣ CRÉER UNE NOUVELLE PARTIE
+            // ===============================
+            String sqlPartie = """
+                INSERT INTO Partie (nom_partie, id_joueur)
+                VALUES (?, NULL)
+                RETURNING id_partie
+            """;
+            try (PreparedStatement psPartie = conn.prepareStatement(sqlPartie)) {
+                psPartie.setString(1, "Partie_" + System.currentTimeMillis());
+                ResultSet rs = psPartie.executeQuery();
+                rs.next();
+                int idPartie = rs.getInt("id_partie");
+                System.out.println("🎮 Partie créée (id_partie=" + idPartie + ")");
+
+                // ===============================
+                // 2️⃣ SAUVEGARDER LE PERSONNAGE DU JOUEUR
+                // ===============================
+                Personnage p = joueur.hero;
+                p.saveToDB(conn, idPartie);
+
+                // ===============================
+                // 3️⃣ SAUVEGARDER LE JOUEUR LIÉ AU PERSONNAGE
+                // ===============================
+                String sqlJoueur = """
+                    INSERT INTO Joueur (id_personnage)
+                    VALUES ((SELECT id_personnage FROM Personnage WHERE id_partie = ? ORDER BY id_personnage DESC LIMIT 1))
+                    RETURNING id_joueur
+                """;
+                int idJoueur;
+                try (PreparedStatement psJoueur = conn.prepareStatement(sqlJoueur)) {
+                    psJoueur.setInt(1, idPartie);
+                    ResultSet rsJoueur = psJoueur.executeQuery();
+                    rsJoueur.next();
+                    idJoueur = rsJoueur.getInt("id_joueur");
+                }
+                System.out.println("🧍 Joueur inséré (id_joueur=" + idJoueur + ")");
+
+                // ===============================
+                // 4️⃣ LIAISON PARTIE ↔ JOUEUR
+                // ===============================
+                try (PreparedStatement psMajPartie =
+                        conn.prepareStatement("UPDATE Partie SET id_joueur=? WHERE id_partie=?")) {
+                    psMajPartie.setInt(1, idJoueur);
+                    psMajPartie.setInt(2, idPartie);
+                    psMajPartie.executeUpdate();
+                }
+
+                // ===============================
+                // 5️⃣ CRÉER L'INVENTAIRE DU JOUEUR
+                // ===============================
+                int idInventaire;
+                try (PreparedStatement psInv = conn.prepareStatement(
+                        "INSERT INTO Inventaire (id_joueur) VALUES (?) RETURNING id_inventaire")) {
+                    psInv.setInt(1, idJoueur);
+                    ResultSet rsInv = psInv.executeQuery();
+                    rsInv.next();
+                    idInventaire = rsInv.getInt("id_inventaire");
+                    System.out.println("🎒 Inventaire créé (id_inventaire=" + idInventaire + ")");
+                }
+
+                // ===============================
+                // 6️⃣ SAUVEGARDER LES OBJETS DU MONDE
+                // ===============================
+                for (Objet o : this.ListObjets) {
+                    if (o instanceof Epee epee) epee.saveToDB(conn, idPartie);
+                    else if (o instanceof PotionSoin potion) potion.saveToDB(conn, idPartie);
+                    else if (o instanceof Nourriture nour) nour.saveToDB(conn, idPartie);
+                    else if (o instanceof NuageToxique nuage) nuage.saveToDB(conn, idPartie);
+                }
+
+                // ===============================
+                // 7️⃣ SAUVEGARDER LE CONTENU DE L’INVENTAIRE DU JOUEUR
+                // ===============================
+                String sqlContenu = """
+                    INSERT INTO Contenu_Inventaire (id_inventaire, id_nourriture, quantite)
+                    VALUES (?, ?, 1)
+                """;
+                try (PreparedStatement psContenu = conn.prepareStatement(sqlContenu)) {
+                    for (Objet o : joueur.hero.getInventaire()) {
+                        if (o instanceof Nourriture n) {
+                            // sauvegarde la nourriture si elle n’existe pas encore
+                            n.saveToDB(conn, idPartie);
+
+                            // récupérer son id
+                            String getIdSql = """
+                                SELECT id_nourriture FROM Nourriture
+                                WHERE nom = ? AND id_partie = ?
+                                ORDER BY id_nourriture DESC LIMIT 1
+                            """;
+                            try (PreparedStatement psGet = conn.prepareStatement(getIdSql)) {
+                                psGet.setString(1, n.getNom());
+                                psGet.setInt(2, idPartie);
+                                ResultSet rsN = psGet.executeQuery();
+                                if (rsN.next()) {
+                                    int idNourriture = rsN.getInt("id_nourriture");
+                                    psContenu.setInt(1, idInventaire);
+                                    psContenu.setInt(2, idNourriture);
+                                    psContenu.addBatch();
+                                }
+                            }
+                        }
+                    }
+                    psContenu.executeBatch();
+                    System.out.println("✅ Contenu inventaire inséré (" + joueur.hero.getInventaire().size() + " éléments)");
+                }
+
+                // ===============================
+                // 8️⃣ SAUVEGARDER LES CRÉATURES DU MONDE
+                // ===============================
+                for (Creature c : this.ListCreature) {
+                    if (c instanceof Loup loup) loup.saveToDB(conn, idPartie);
+                    else if (c instanceof Lapin lapin) lapin.saveToDB(conn, idPartie);
+                }
+
+                // ===============================
+                // ✅ FIN
+                // ===============================
+                System.out.println("🌍 Monde complet sauvegardé avec succès (id_partie=" + idPartie + ")");
+            }
+
+        } catch (SQLException e) {
+            System.err.println("❌ Erreur sauvegarde monde : " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
 
 }

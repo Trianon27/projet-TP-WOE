@@ -5,6 +5,9 @@
 package org.centrale.objet.woe.projettp;
 import java.util.List;
 import java.util.Set;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 /**
  * La classe {@code NuageToxique} représente un élément dangereux du monde du jeu
  * générant des dégâts continus dans une zone déterminée pendant un certain nombre de tours.
@@ -249,5 +252,31 @@ public class NuageToxique extends Objet implements Deplacable, Combattant {
             System.out.println("----------------------------------------------");
         }
     }
+    
+    
+
+
+public void saveToDB(Connection conn, int idPartie) {
+    String sql = """
+        INSERT INTO NuageToxique (nom, description, posX, posY, degAtt, duree, tailleZone, id_partie)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    """;
+
+    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        ps.setString(1, this.getNom());
+        ps.setString(2, this.getDescription());
+        ps.setInt(3, this.getPos().getX());
+        ps.setInt(4, this.getPos().getY());
+        ps.setInt(5, this.getDegatParTour());
+        ps.setInt(6, this.getDuree());
+        ps.setInt(7, this.getTaille());
+        ps.setInt(8, idPartie);
+        ps.executeUpdate();
+
+        System.out.println("✅ NuageToxique inséré en base");
+    } catch (SQLException e) {
+        System.err.println("Erreur NuageToxique.saveToDB : " + e.getMessage());
+    }
+}
 
 }

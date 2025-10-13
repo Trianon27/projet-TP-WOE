@@ -4,6 +4,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 
 /**
  * La classe {@code Personnage} représente un personnage du jeu.
@@ -147,6 +152,53 @@ public class Personnage extends Creature {
                 it.remove();
                 System.out.println("Effet terminé et retiré : " + effet);
             }
+        }
+    }
+    
+    
+
+    public void saveToDB(Connection conn, int idPartie) {
+        try {
+            String sql = """
+                INSERT INTO Personnage (
+                    type_personnage, nom, ptVie, degAtt, ptPar,
+                    pourcentageAtt, pourcentagePar, distAttMax,
+                    distVue, posX, posY, id_partie
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                RETURNING id_personnage
+            """;
+
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, this.getClass().getSimpleName());
+            ps.setString(2, this.getNom());
+            ps.setInt(3, this.getPtVie());
+            ps.setInt(4, this.getDegAtt());
+            ps.setInt(5, this.getPtPar());
+            ps.setInt(6, this.getPageAtt());
+            ps.setInt(7, this.getPagePar());
+            ps.setInt(8, this.getDistAttMax());
+            ps.setInt(9, this.getDistanceVision());
+            ps.setInt(10, this.getPos().getX());
+            ps.setInt(11, this.getPos().getY());
+            ps.setInt(12, idPartie);
+
+            ResultSet rs = ps.executeQuery();
+            rs.next();
+            int idPersonnage = rs.getInt("id_personnage");
+
+            // Appel à la méthode spécifique selon le type
+            if (this instanceof Archer archer) {
+                archer.saveArcher(conn, idPersonnage);
+            } else if (this instanceof Guerrier guerrier) {
+                guerrier.saveGuerrier(conn, idPersonnage);
+            } else if (this instanceof Paysan paysan) {
+                paysan.savePaysan(conn, idPersonnage);
+            }
+
+            System.out.println("✅ " + this.getClass().getSimpleName() + " inséré en base (ID " + idPersonnage + ")");
+        } catch (SQLException e) {
+            System.err.println("❌ Erreur Personnage.saveToDB : " + e.getMessage());
         }
     }
 
