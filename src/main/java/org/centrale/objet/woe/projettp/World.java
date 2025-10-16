@@ -4,15 +4,15 @@ import java.util.*;
 import java.sql.*;
 
 /**
- * Représente le monde du jeu WoE avec ses personnages, créatures et objets.
+ * Represente le monde du jeu WoE avec ses personnages, creatures et objets.
  * <p>
  * Cette classe permet de :
  * <ul>
- * <li>Créer un monde aléatoire avec des positions uniques pour chaque entité.</li>
- * <li>Générer des personnages, monstres et objets aléatoirement.</li>
- * <li>Afficher l’état du monde et ses protagonistes.</li>
+ * <li>Creer un monde aleatoire avec des positions uniques pour chaque entite.</li>
+ * <li>Generer des personnages, monstres et objets aleatoirement.</li>
+ * <li>Afficher l’etat du monde et ses protagonistes.</li>
  * <li>Analyser et simuler les tours du jeu.</li>
- * <li>Sauvegarder l’état complet du monde dans une base PostgreSQL.</li>
+ * <li>Sauvegarder l’etat complet du monde dans une base PostgreSQL.</li>
  * </ul>
  *
  * @author
@@ -21,22 +21,22 @@ import java.sql.*;
 public class World {
 
     // ====================== ATTRIBUTS ======================
-    /** Taille du monde (carré TAILLE_MONDE x TAILLE_MONDE) */
+    /** Taille du monde (carre TAILLE_MONDE x TAILLE_MONDE) */
     public int TAILLE_MONDE;
 
-    /** Liste de toutes les créatures */
+    /** Liste de toutes les creatures */
     public ArrayList<Creature> ListCreature;
 
     /** Liste de tous les objets */
     public LinkedList<Objet> ListObjets;
 
-    /** Liste des entités analytiques (IA, PNJ, etc.) */
+    /** Liste des entites analytiques (IA, PNJ, etc.) */
     public ArrayList<Analyze> ListAnalyze;
 
-    /** Liste de tous les éléments du jeu (créatures + objets) */
+    /** Liste de tous les elements du jeu (creatures + objets) */
     public ArrayList<ElementDeJeu> ListElementJeu;
 
-    /** Ensemble des positions occupées */
+    /** Ensemble des positions occupees */
     private final Set<Point2D> positionsOccupees;
 
     // ====================== CONSTRUCTEUR ======================
@@ -49,7 +49,7 @@ public class World {
         this.positionsOccupees = new HashSet<>();
     }
 
-    // ====================== CRÉATION DU JOUEUR ======================
+    // ====================== CReATION DU JOUEUR ======================
     public Joueur creationJoueur() {
         Random rand = new Random();
         Joueur moi = new Joueur();
@@ -63,7 +63,7 @@ public class World {
             System.out.println("Choisissez un personnage :");
             System.out.println("1 - Guerrier");
             System.out.println("2 - Archer");
-            System.out.println("3 - Aléatoire");
+            System.out.println("3 - Aleatoire");
             choix = sc.nextInt();
 
             if (choix == 3) choix = rand.nextInt(2) + 1;
@@ -97,7 +97,7 @@ public class World {
         return moi;
     }
 
-    // ====================== GÉNÉRATION DU MONDE ======================
+    // ====================== GeNeRATION DU MONDE ======================
     public void creerMondeAlea() {
         Random rand = new Random();
         generationCreatures(40, rand, this.ListCreature);
@@ -138,9 +138,9 @@ public class World {
     /**
  * Fait tourner le monde pendant plusieurs tours.
  * À chaque tour :
- *  - le joueur choisit une action (déplacement, attaque, sauvegarde, etc.)
- *  - les autres entités exécutent leur IA (Analyze)
- *  - le monde est réaffiché
+ *  - le joueur choisit une action (deplacement, attaque, sauvegarde, etc.)
+ *  - les autres entites executent leur IA (Analyze)
+ *  - le monde est reaffiche
  *
  * @param nbTours nombre de tours à simuler
  * @param moi le joueur
@@ -150,25 +150,25 @@ public void tourDeJour(int nbTours, Joueur moi, Connection conn) {
     for (int t = 0; t < nbTours; t++) {
         System.out.println("\n===== TOUR " + (t + 1) + " =====");
 
-        // 🔹 le joueur agit (avec possibilité de sauvegarde via option 0)
+        // 🔹 le joueur agit (avec possibilite de sauvegarde via option 0)
         moi.analyzer(this.positionsOccupees, this.ListCreature, this.ListObjets, this, conn);
 
-        // 🔹 IA des autres créatures (Analyse du monde)
+        // 🔹 IA des autres creatures (Analyse du monde)
         for (Analyze e : this.ListAnalyze) {
             if (e != null && e != moi) {
                 try {
                     e.analyzer(this.positionsOccupees, this.ListCreature, this.ListObjets, this.TAILLE_MONDE);
                 } catch (Exception ex) {
-                    System.err.println("⚠️ Erreur IA d'une entité : " + ex.getMessage());
+                    System.err.println("⚠️ Erreur IA d'une entite : " + ex.getMessage());
                 }
             }
         }
 
-        // 🔹 réafficher le monde après les actions
+        // 🔹 reafficher le monde après les actions
         this.afficheWorld(moi);
     }
 
-    System.out.println("🏁 Simulation terminée après " + nbTours + " tours !");
+    System.out.println("🏁 Simulation terminee après " + nbTours + " tours !");
 }
 
     
@@ -197,7 +197,7 @@ public void tourDeJour(int nbTours, Joueur moi, Connection conn) {
 
         placerDansMonde(monde, moi.hero, 'S');
         afficherZoneVisible(monde, moi.hero);
-        System.out.println("\n=== STATS DU HÉROS ===");
+        System.out.println("\n=== STATS DU HeROS ===");
         moi.hero.affiche();
         System.out.println("=======================");
     }
@@ -240,7 +240,7 @@ public void tourDeJour(int nbTours, Joueur moi, Connection conn) {
         }
     }
 
-    // ====================== GÉNÉRATION DES TYPES ======================
+    // ====================== GeNeRATION DES TYPES ======================
     private Personnage GenerationP(int id, Point2D p) {
         Random r = new Random();
         return switch (r.nextInt(3)) {
@@ -263,8 +263,8 @@ public void tourDeJour(int nbTours, Joueur moi, Connection conn) {
             case 0 -> new PotionSoin("Potion " + id, "Potion magique", p, 20);
             case 1 -> new Epee("Epee " + id, "Epee en acier", p, 15, Epee.Etat.NONE);
             case 2 -> new Nourriture(Nourriture.Nourritures.ALCOHOOL, "Alcool", "Très fort", p);
-            case 3 -> new Nourriture(Nourriture.Nourritures.LEGUMBRE, "Légume", "Bon pour la santé", p);
-            case 4 -> new Nourriture(Nourriture.Nourritures.BOISSONRICHE, "Boisson riche", "Energétique", p);
+            case 3 -> new Nourriture(Nourriture.Nourritures.LEGUMBRE, "Legume", "Bon pour la sante", p);
+            case 4 -> new Nourriture(Nourriture.Nourritures.BOISSONRICHE, "Boisson riche", "Energetique", p);
             case 5 -> new Nourriture(Nourriture.Nourritures.POMMEDOR, "Pomme d'or", "Magique", p);
             default -> new NuageToxique("NuageT " + id, "Gaz toxique", p, r.nextInt(10) + 1, r.nextInt(3) + 1, r.nextInt(11) + 1);
         };
@@ -273,7 +273,7 @@ public void tourDeJour(int nbTours, Joueur moi, Connection conn) {
     // ====================== SAUVEGARDE MONDE ======================
     public void saveWorldToDB(Connection conn, Joueur joueur) {
         try {
-            // 1️⃣ Créer la partie
+            // 1️⃣ Creer la partie
             String sqlPartie = """
                 INSERT INTO Partie (nom_partie, id_joueur)
                 VALUES (?, NULL)
@@ -286,7 +286,7 @@ public void tourDeJour(int nbTours, Joueur moi, Connection conn) {
                 rs.next();
                 idPartie = rs.getInt("id_partie");
             }
-            System.out.println("🎮 Partie créée (id_partie=" + idPartie + ")");
+            System.out.println("Partie creee (id_partie=" + idPartie + ")");
 
             // 2️⃣ Sauvegarde personnage et joueur
             joueur.hero.saveToDB(conn, idPartie);
@@ -326,7 +326,7 @@ public void tourDeJour(int nbTours, Joueur moi, Connection conn) {
                 else if (o instanceof NuageToxique x) x.saveToDB(conn, idPartie);
             }
 
-            // 5️⃣ Inventaire du héros
+            // 5️⃣ Inventaire du heros
             try (PreparedStatement ps = conn.prepareStatement("""
                 INSERT INTO Contenu_Inventaire (id_inventaire, id_nourriture, quantite)
                 VALUES (?, ?, 1)
@@ -351,15 +351,15 @@ public void tourDeJour(int nbTours, Joueur moi, Connection conn) {
                 ps.executeBatch();
             }
 
-            // 6️⃣ Créatures
+            // 6️⃣ Creatures
             for (Creature c : this.ListCreature) {
                 if (c instanceof Loup l) l.saveToDB(conn, idPartie);
                 else if (c instanceof Lapin la) la.saveToDB(conn, idPartie);
             }
 
-            System.out.println("🌍 Monde sauvegardé avec succès (id_partie=" + idPartie + ")");
+            System.out.println("Monde sauvegarde avec succès (id_partie=" + idPartie + ")");
         } catch (SQLException e) {
-            System.err.println("❌ Erreur World.saveWorldToDB : " + e.getMessage());
+            System.err.println("Erreur World.saveWorldToDB : " + e.getMessage());
             e.printStackTrace();
         }
     }
