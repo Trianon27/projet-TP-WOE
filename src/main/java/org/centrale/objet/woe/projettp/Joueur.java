@@ -6,16 +6,16 @@ import java.sql.SQLException;
 import java.util.*;
 
 /**
- * Classe {@code Joueur} représentant un joueur humain dans le monde WoE.
+ * Classe {@code Joueur} representant un joueur humain dans le monde WoE.
  * <p>
- * Le joueur contrôle un {@link Personnage} jouable (héros) et peut interagir
+ * Le joueur contrôle un {@link Personnage} jouable (heros) et peut interagir
  * avec le monde à travers plusieurs actions :
  * </p>
  *
  * <ul>
  * <li>Sauvegarder la partie (en base PostgreSQL)</li>
- * <li>Se déplacer (8 directions possibles)</li>
- * <li>Attaquer des créatures adjacentes</li>
+ * <li>Se deplacer (8 directions possibles)</li>
+ * <li>Attaquer des creatures adjacentes</li>
  * <li>Interagir avec des objets du monde</li>
  * <li>Utiliser un objet de l'inventaire</li>
  * <li>Ou ne rien faire</li>
@@ -27,13 +27,13 @@ import java.util.*;
 public class Joueur implements Analyze {
 
     // ===================== ATTRIBUTS =====================
-    /** Personnage contrôlé par le joueur. */
+    /** Personnage contrôle par le joueur. */
     public Personnage hero;
 
     /** Nom du joueur (pseudo). */
     private String nomJoueur;
 
-    /** Indique si une action a été effectuée ce tour. */
+    /** Indique si une action a ete effectuee ce tour. */
     private boolean actionEffectuee;
 
     // ===================== CONSTRUCTEURS =====================
@@ -63,22 +63,22 @@ public class Joueur implements Analyze {
         this.hero = hero;
     }
     /**
-     * Implémentation minimale requise par l'interface Analyze.
-     * Cette version est utilisée par le moteur IA (non connectée à la base).
+     * Implementation minimale requise par l'interface Analyze.
+     * Cette version est utilisee par le moteur IA (non connectee à la base).
      * Ici, on appelle simplement la version complète avec les mêmes paramètres,
      * mais sans connexion.
      */
     @Override
     public void analyzer(Set<Point2D> positionWorld, List<Creature> creatures,
                          List<Objet> objets, int tailleMonde) {
-        // Par défaut : simple appel vers la version enrichie sans sauvegarde.
-        // (utile quand le monde tourne sans base de données)
+        // Par defaut : simple appel vers la version enrichie sans sauvegarde.
+        // (utile quand le monde tourne sans base de donnees)
         analyzer(positionWorld, creatures, objets, null, null);
     }
 
     /**
-    * Variante de analyzer pour le mode connecté à la base.
-    * Appelée par World.tourDeJour(..., Connection).
+    * Variante de analyzer pour le mode connecte à la base.
+    * Appelee par World.tourDeJour(..., Connection).
     */
     public void analyzer(Set<Point2D> positionWorld, List<Creature> creatures,
                          List<Objet> objets, World world, Connection conn) {
@@ -91,7 +91,7 @@ public class Joueur implements Analyze {
             actionEffectuee = false;
             System.out.println("\n=== ACTIONS DISPONIBLES ===");
             System.out.println("0 - Sauvegarder la partie");
-            System.out.println("1 - Se déplacer");
+            System.out.println("1 - Se deplacer");
             System.out.println("2 - Attaquer");
             System.out.println("3 - Interagir avec un objet");
             System.out.println("4 - Utiliser un objet de l'inventaire");
@@ -101,9 +101,9 @@ public class Joueur implements Analyze {
             int choix = sc.nextInt();
             switch (choix) {
                 case 0 -> {
-                    System.out.println("💾 Sauvegarde en cours...");
+                    System.out.println("Sauvegarde en cours...");
                     world.saveWorldToDB(conn, this);
-                    System.out.println("✅ Partie sauvegardée !");
+                    System.out.println("Partie sauvegardee !");
                     // on ne quitte pas la boucle pour continuer à jouer
                     actionEffectuee = false;
                 }
@@ -115,14 +115,14 @@ public class Joueur implements Analyze {
                     System.out.println("Vous choisissez de ne rien faire.");
                     actionEffectuee = true;
                 }
-                default -> System.out.println("❌ Option invalide !");
+                default -> System.out.println("Option invalide !");
             }
 
         } while (!actionEffectuee);
     }
 
     // ===================== CONTRÔLEURS =====================
-    /** Déplacement avec diagonales et vérification des collisions */
+    /** Deplacement avec diagonales et verification des collisions */
     public void deplacerController(List<Creature> creatures, int tailleMonde) {
         Scanner sc = new Scanner(System.in);
         boolean choixValide;
@@ -130,7 +130,7 @@ public class Joueur implements Analyze {
         do {
             choixValide = true;
             System.out.println("""
-                Déplacement :
+                Deplacement :
                 0-Retour | 1-Haut | 2-Bas | 3-Gauche | 4-Droite |
                 5-Haut-Gauche | 6-Haut-Droite | 7-Bas-Gauche | 8-Bas-Droite
             """);
@@ -162,25 +162,25 @@ public class Joueur implements Analyze {
 
             // Limites du monde
             if (newPos.getX() < 0 || newPos.getY() < 0 || newPos.getX() >= tailleMonde || newPos.getY() >= tailleMonde) {
-                System.out.println("❌ Déplacement hors du monde !");
+                System.out.println("❌ Deplacement hors du monde !");
                 choixValide = false;
                 continue;
             }
 
             boolean bloque = creatures.stream().anyMatch(c -> c.getPos().equals(newPos));
             if (bloque) {
-                System.out.println("❌ Une créature bloque le passage !");
+                System.out.println("❌ Une creature bloque le passage !");
                 choixValide = false;
             } else {
                 hero.deplacer(dx, dy);
-                System.out.println("✅ Vous êtes maintenant en " + hero.getPos());
+                System.out.println("Vous êtes maintenant en " + hero.getPos());
                 actionEffectuee = true;
             }
 
         } while (!choixValide);
     }
 
-    /** Attaque les créatures à portée */
+    /** Attaque les creatures à portee */
     public void attaquerController(List<Creature> creatures, Set<Point2D> positionWorld) {
         Scanner sc = new Scanner(System.in);
         List<Creature> cibles = new ArrayList<>();
@@ -194,11 +194,11 @@ public class Joueur implements Analyze {
         }
 
         if (cibles.isEmpty()) {
-            System.out.println("Aucune cible à proximité !");
+            System.out.println("Aucune cible à proximite !");
             return;
         }
 
-        System.out.println("Cibles à portée :");
+        System.out.println("Cibles à portee :");
         for (int i = 0; i < cibles.size(); i++)
             System.out.println((i + 1) + " - " + cibles.get(i).getNom() + " (" + cibles.get(i).getPtVie() + " PV)");
         System.out.println("0 - Retour");
@@ -223,8 +223,8 @@ public class Joueur implements Analyze {
             return;
         }
 
-        System.out.println("Objet trouvé : " + cible.getNom());
-        System.out.println("1 - Utiliser immédiatement");
+        System.out.println("Objet trouve : " + cible.getNom());
+        System.out.println("1 - Utiliser immediatement");
         System.out.println("2 - Ajouter à l'inventaire");
         System.out.println("0 - Retour");
 
@@ -240,10 +240,10 @@ public class Joueur implements Analyze {
                     hero.getInventaire().add(cible);
                     positionWorld.remove(cible.getPosition());
                     objets.remove(cible);
-                    System.out.println("✅ " + cible.getNom() + " ajouté à l’inventaire !");
+                    System.out.println("" + cible.getNom() + " ajoute à l’inventaire !");
                     actionEffectuee = true;
                 } else {
-                    System.out.println("❌ Cet objet ne peut pas être stocké !");
+                    System.out.println("Cet objet ne peut pas être stocke !");
                 }
             }
             case 0 -> System.out.println("Retour au menu principal...");
@@ -278,10 +278,10 @@ public class Joueur implements Analyze {
         if (o instanceof ObjetUtilisable ou) {
             ou.appliquerEffet(hero);
             inventaire.remove(o);
-            System.out.println("✅ Vous avez utilisé : " + o.getNom());
+            System.out.println("Vous avez utilise : " + o.getNom());
             actionEffectuee = true;
         } else {
-            System.out.println("❌ Cet objet n’est pas utilisable !");
+            System.out.println("Cet objet n’est pas utilisable !");
         }
     }
 
