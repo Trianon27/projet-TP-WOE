@@ -101,11 +101,36 @@ public class Joueur implements Analyze {
             int choix = sc.nextInt();
             switch (choix) {
                 case 0 -> {
-                    System.out.println("Sauvegarde en cours...");
-                    world.saveWorldToDB(conn, this);
-                    System.out.println("Partie sauvegardee !");
-                    // on ne quitte pas la boucle pour continuer à jouer
-                    actionEffectuee = false;
+                    sc.nextLine(); // ⚠️ pour consommer le retour ligne de nextInt()
+                    System.out.print("💾 Entrez un nom pour votre partie : ");
+                    String nomPartie = sc.nextLine();
+
+                    if (nomPartie.trim().isEmpty()) {
+                        nomPartie = "Partie_sans_nom_" + System.currentTimeMillis();
+                    }
+
+                    int tourActuel = world.getCurrentTurn();
+                    int toursRestants = world.getRemainingTurns();
+
+                    System.out.println("\n💾 Sauvegarde de la partie '" + nomPartie + "' en cours...");
+                    int idPartie = world.saveWorldToDB(conn, this, nomPartie, tourActuel, toursRestants);
+
+                    if (idPartie != -1) {
+                        // ✅ on utilise le setter au lieu d'accéder directement à l'attribut privé
+                        world.setCurrentPartieId(idPartie);
+
+                        System.out.println("""
+                            ✅ Partie sauvegardée avec succès !
+                            🆔 ID de la partie : """ + idPartie + """
+
+                            💡 Conservez cet identifiant précieusement.
+                            Il vous sera nécessaire pour restaurer votre partie plus tard.
+                        """);
+                    } else {
+                        System.out.println("❌ Erreur : la sauvegarde n’a pas pu être réalisée.");
+                    }
+
+                    actionEffectuee = false; // reste dans le menu après sauvegarde
                 }
                 case 1 -> deplacerController(creatures, world.TAILLE_MONDE);
                 case 2 -> attaquerController(creatures, positionWorld);

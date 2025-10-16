@@ -38,8 +38,18 @@ public class World {
 
     /** Ensemble des positions occupees */
     private final Set<Point2D> positionsOccupees;
+    
+    // Suivi de partie / progression
+    private int currentPartieId = -1;   // -1 => pas encore de partie enregistrée
+    private int currentTurn = 0;
+    private int remainingTurns = 0;
 
-    // ====================== CONSTRUCTEUR ======================
+    public int getCurrentPartieId() { return currentPartieId; }
+    public void setCurrentPartieId(int id) { this.currentPartieId = id; }
+
+    public int getCurrentTurn() { return currentTurn; }
+    public int getRemainingTurns() { return remainingTurns; }
+        // ====================== CONSTRUCTEUR ======================
     public World() {
         this.TAILLE_MONDE = 20;
         this.ListCreature = new ArrayList<>();
@@ -50,6 +60,7 @@ public class World {
     }
 
     // ====================== CReATION DU JOUEUR ======================
+
     public Joueur creationJoueur() {
         Random rand = new Random();
         Joueur moi = new Joueur();
@@ -136,40 +147,52 @@ public class World {
 
     
     /**
- * Fait tourner le monde pendant plusieurs tours.
- * À chaque tour :
- *  - le joueur choisit une action (deplacement, attaque, sauvegarde, etc.)
- *  - les autres entites executent leur IA (Analyze)
- *  - le monde est reaffiche
- *
- * @param nbTours nombre de tours à simuler
- * @param moi le joueur
- * @param conn connexion SQL active (permet la sauvegarde via option 0)
- */
-public void tourDeJour(int nbTours, Joueur moi, Connection conn) {
-    for (int t = 0; t < nbTours; t++) {
-        System.out.println("\n===== TOUR " + (t + 1) + " =====");
+    * Fait tourner le monde pendant plusieurs tours.
+    * À chaque tour :
+    *  - le joueur choisit une action (deplacement, attaque, sauvegarde, etc.)
+    *  - les autres entites executent leur IA (Analyze)
+    *  - le monde est reaffiche
+    *
+    * @param nbTours nombre de tours à simuler
+    * @param moi le joueur
+    * @param conn connexion SQL active (permet la sauvegarde via option 0)
+    */
+   public void tourDeJour(int nbTours, Joueur moi, Connection conn) {
+       for (int t = 0; t < nbTours; t++) {
+           int tourActuel = t + 1;
+           int toursRestants = nbTours - tourActuel;
 
-        // 🔹 le joueur agit (avec possibilite de sauvegarde via option 0)
-        moi.analyzer(this.positionsOccupees, this.ListCreature, this.ListObjets, this, conn);
+           // ✅ expose ces valeurs via getters (utilisées par Joueur lors d'une sauvegarde)
+           this.currentTurn = tourActuel;
+           this.remainingTurns = toursRestants;
 
-        // 🔹 IA des autres creatures (Analyse du monde)
-        for (Analyze e : this.ListAnalyze) {
-            if (e != null && e != moi) {
-                try {
-                    e.analyzer(this.positionsOccupees, this.ListCreature, this.ListObjets, this.TAILLE_MONDE);
-                } catch (Exception ex) {
-                    System.err.println("⚠️ Erreur IA d'une entite : " + ex.getMessage());
-                }
-            }
-        }
+           System.out.println("===== TOUR " + tourActuel + " / " + nbTours + " =====");
 
-        // 🔹 reafficher le monde après les actions
-        this.afficheWorld(moi);
-    }
+           // menu joueur (peut déclencher une sauvegarde manuelle)
+           moi.analyzer(this.positionsOccupees, this.ListCreature, this.ListObjets, this, conn);
 
-    System.out.println("🏁 Simulation terminee après " + nbTours + " tours !");
-}
+           // ✅ si une partie est déjà créée (autosave ou sauvegarde manuelle), persister la progression
+           if (this.currentPartieId != -1) {
+               try (PreparedStatement ps = conn.prepareStatement(
+                   "UPDATE Partie " +
+                   "SET tour_actuel = ?, tours_restants = ?, date_sauvegarde = CURRENT_TIMESTAMP " +
+                   "WHERE id_partie = ?"
+               )) {
+                   ps.setInt(1, tourActuel);
+                   ps.setInt(2, toursRestants);
+                   ps.setInt(3, this.currentPartieId);
+                   ps.executeUpdate();
+                   System.out.println("💾 Progression enregistrée : tour " + tourActuel + " / " + nbTours);
+               } catch (SQLException e) {
+                   System.err.println("⚠️ Erreur mise à jour des tours : " + e.getMessage());
+               }
+           }
+
+           this.afficheWorld(moi);
+       }
+       System.out.println("🏁 Simulation terminée après " + nbTours + " tours !");
+   }
+
 
     
     
@@ -271,54 +294,61 @@ public void tourDeJour(int nbTours, Joueur moi, Connection conn) {
     }
 
     // ====================== SAUVEGARDE MONDE ======================
-    public void saveWorldToDB(Connection conn, Joueur joueur) {
+    public int saveWorldToDB(Connection conn, Joueur joueur, String nomPartie, int tourActuel, int toursRestants) {
+        int idPartie = -1;
         try {
-            // 1️⃣ Creer la partie
+            // 1) Créer la partie avec les infos de progression
             String sqlPartie = """
-                INSERT INTO Partie (nom_partie, id_joueur)
-                VALUES (?, NULL)
+                INSERT INTO Partie (nom_partie, id_joueur, tour_actuel, tours_restants, date_sauvegarde)
+                VALUES (?, NULL, ?, ?, CURRENT_TIMESTAMP)
                 RETURNING id_partie
             """;
-            int idPartie;
-            try (PreparedStatement ps = conn.prepareStatement(sqlPartie)) {
-                ps.setString(1, "Partie_" + System.currentTimeMillis());
-                ResultSet rs = ps.executeQuery();
+            try (PreparedStatement psPartie = conn.prepareStatement(sqlPartie)) {
+                psPartie.setString(1, nomPartie);
+                psPartie.setInt(2, tourActuel);
+                psPartie.setInt(3, toursRestants);
+                var rs = psPartie.executeQuery();
                 rs.next();
                 idPartie = rs.getInt("id_partie");
+                this.currentPartieId = idPartie; // ✅ mémorise pour les updates suivants
             }
-            System.out.println("Partie creee (id_partie=" + idPartie + ")");
+            System.out.println("✅ Partie créée (id_partie = " + idPartie + ", nom = '" + nomPartie + "')");
 
-            // 2️⃣ Sauvegarde personnage et joueur
+            // 2) Perso du joueur
             joueur.hero.saveToDB(conn, idPartie);
+
+            // 3) Joueur lié au personnage
             int idJoueur;
-            try (PreparedStatement ps = conn.prepareStatement("""
+            try (PreparedStatement psJoueur = conn.prepareStatement("""
                 INSERT INTO Joueur (id_personnage)
-                VALUES ((SELECT id_personnage FROM Personnage WHERE id_partie=? ORDER BY id_personnage DESC LIMIT 1))
+                VALUES ((SELECT id_personnage FROM Personnage WHERE id_partie = ? ORDER BY id_personnage DESC LIMIT 1))
                 RETURNING id_joueur
             """)) {
-                ps.setInt(1, idPartie);
-                ResultSet rs = ps.executeQuery();
-                rs.next();
-                idJoueur = rs.getInt("id_joueur");
+                psJoueur.setInt(1, idPartie);
+                var rsJ = psJoueur.executeQuery();
+                rsJ.next();
+                idJoueur = rsJ.getInt("id_joueur");
+            }
+            try (PreparedStatement psMaj = conn.prepareStatement(
+                "UPDATE Partie SET id_joueur = ? WHERE id_partie = ?"
+            )) {
+                psMaj.setInt(1, idJoueur);
+                psMaj.setInt(2, idPartie);
+                psMaj.executeUpdate();
             }
 
-            try (PreparedStatement ps = conn.prepareStatement("UPDATE Partie SET id_joueur=? WHERE id_partie=?")) {
-                ps.setInt(1, idJoueur);
-                ps.setInt(2, idPartie);
-                ps.executeUpdate();
-            }
-
-            // 3️⃣ Inventaire
+            // 4) Inventaire (créer l'inventaire)
             int idInventaire;
-            try (PreparedStatement ps = conn.prepareStatement(
-                    "INSERT INTO Inventaire (id_joueur) VALUES (?) RETURNING id_inventaire")) {
-                ps.setInt(1, idJoueur);
-                ResultSet rs = ps.executeQuery();
-                rs.next();
-                idInventaire = rs.getInt("id_inventaire");
+            try (PreparedStatement psInv = conn.prepareStatement(
+                "INSERT INTO Inventaire (id_joueur) VALUES (?) RETURNING id_inventaire"
+            )) {
+                psInv.setInt(1, idJoueur);
+                var rsI = psInv.executeQuery();
+                rsI.next();
+                idInventaire = rsI.getInt("id_inventaire");
             }
 
-            // 4️⃣ Objets du monde
+            // 5) Objets du monde
             for (Objet o : this.ListObjets) {
                 if (o instanceof Epee e) e.saveToDB(conn, idPartie);
                 else if (o instanceof PotionSoin p) p.saveToDB(conn, idPartie);
@@ -326,41 +356,47 @@ public void tourDeJour(int nbTours, Joueur moi, Connection conn) {
                 else if (o instanceof NuageToxique x) x.saveToDB(conn, idPartie);
             }
 
-            // 5️⃣ Inventaire du heros
-            try (PreparedStatement ps = conn.prepareStatement("""
+            // 6) Contenu inventaire du héros
+            try (PreparedStatement psCont = conn.prepareStatement("""
                 INSERT INTO Contenu_Inventaire (id_inventaire, id_nourriture, quantite)
                 VALUES (?, ?, 1)
             """)) {
                 for (Objet o : joueur.hero.getInventaire()) {
                     if (o instanceof Nourriture n) {
                         n.saveToDB(conn, idPartie);
-                        PreparedStatement get = conn.prepareStatement("""
+                        try (PreparedStatement psGet = conn.prepareStatement("""
                             SELECT id_nourriture FROM Nourriture
-                            WHERE nom=? AND id_partie=? ORDER BY id_nourriture DESC LIMIT 1
-                        """);
-                        get.setString(1, n.getNom());
-                        get.setInt(2, idPartie);
-                        ResultSet rs = get.executeQuery();
-                        if (rs.next()) {
-                            ps.setInt(1, idInventaire);
-                            ps.setInt(2, rs.getInt("id_nourriture"));
-                            ps.addBatch();
+                            WHERE nom = ? AND id_partie = ?
+                            ORDER BY id_nourriture DESC LIMIT 1
+                        """)) {
+                            psGet.setString(1, n.getNom());
+                            psGet.setInt(2, idPartie);
+                            var rsN = psGet.executeQuery();
+                            if (rsN.next()) {
+                                psCont.setInt(1, idInventaire);
+                                psCont.setInt(2, rsN.getInt("id_nourriture"));
+                                psCont.addBatch();
+                            }
                         }
                     }
                 }
-                ps.executeBatch();
+                psCont.executeBatch();
             }
 
-            // 6️⃣ Creatures
+            // 7) Créatures
             for (Creature c : this.ListCreature) {
                 if (c instanceof Loup l) l.saveToDB(conn, idPartie);
                 else if (c instanceof Lapin la) la.saveToDB(conn, idPartie);
             }
 
-            System.out.println("Monde sauvegarde avec succès (id_partie=" + idPartie + ")");
+            System.out.println("🌍 Monde sauvegardé avec succès (id_partie=" + idPartie + ")");
+            return idPartie;
+
         } catch (SQLException e) {
-            System.err.println("Erreur World.saveWorldToDB : " + e.getMessage());
+            System.err.println("❌ Erreur World.saveWorldToDB : " + e.getMessage());
             e.printStackTrace();
+            return -1;
         }
     }
+
 }
