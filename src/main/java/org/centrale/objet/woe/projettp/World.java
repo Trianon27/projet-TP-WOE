@@ -4,7 +4,7 @@ import java.util.*;
 import java.sql.*;
 
 /**
- * Represente le monde du jeu WoE avec ses personnages, creatures et objets.
+ * represente le monde du jeu WoE avec ses personnages, creatures et objets.
  * <p>
  * Cette classe permet de :
  * <ul>
