@@ -1,18 +1,40 @@
 package org.centrale.objet.woe.projettp;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Random;
+
 /**
  * Classe représentant une Nourriture pouvant être utilisée par un Personnage.
+ * <p>
  * Elle applique un effet temporaire (bonus/malus) sur certaines
- * caractéristiques du personnage pendant un certain nombre de tours de jeu.
+ * caractéristiques du personnage pendant un certain nombre de tours.
+ * </p>
  *
- * @author srodr
+ * <p>
+ * Chaque type de nourriture a un effet et une durée différente :
+ * <ul>
+ *   <li>🍺 ALCOHOOL — réduit l’attaque, augmente la parade</li>
+ *   <li>🥦 LEGUMBRE — augmente attaque + parade</li>
+ *   <li>🥤 BOISSONRICHE — augmente la distance d’attaque mais diminue la parade</li>
+ *   <li>🍎 POMMEDOR — augmente fortement attaque + parade</li>
+ * </ul>
+ * </p>
+ *
+ * <p>La classe gère aussi la persistance en base de données via {@link #saveToDB(Connection, int)}.</p>
+ *
+ * @author
+ * @version 3.0 (fusion complète)
  */
 public class Nourriture extends Objet implements ObjetUtilisable {
 
-    private int coolDown; // Durée restante de l'effet en tours
+    // ================= ATTRIBUTS =================
 
+    /** Durée restante de l'effet en tours. */
+    private int coolDown;
+
+    /** Type de nourriture. */
     public enum Nourritures {
         ALCOHOOL,
         LEGUMBRE,
@@ -22,35 +44,60 @@ public class Nourriture extends Objet implements ObjetUtilisable {
 
     private Nourritures typeNourriture;
 
-    // --- Constructeurs ---
-    public Nourriture(int coolDown, Nourritures typeNourriture) {
-        this.coolDown = coolDown;
+    // ================= CONSTRUCTEURS =================
+
+    /** Constructeur simple avec génération automatique de durée aléatoire. */
+    public Nourriture(Nourritures typeNourriture) {
+        super();
         this.typeNourriture = typeNourriture;
+        this.coolDown = genererCoolDownAleatoire(typeNourriture);
     }
 
+    /** Constructeur complet (avec position et description). */
+    public Nourriture(Nourritures typeNourriture, String nom, String description, Point2D position) {
+        super(nom, description, position);
+        this.typeNourriture = typeNourriture;
+        this.coolDown = genererCoolDownAleatoire(typeNourriture);
+    }
+
+    /** Constructeur par copie. */
+    public Nourriture(Nourritures typeNourriture, Objet o) {
+        super(o);
+        this.typeNourriture = typeNourriture;
+        this.coolDown = genererCoolDownAleatoire(typeNourriture);
+    }
+
+    /** Constructeur direct avec cooldown défini (utile pour chargement BDD). */
     public Nourriture(int coolDown, Nourritures typeNourriture, String nom, String description, Point2D position) {
         super(nom, description, position);
-        this.coolDown = coolDown;
         this.typeNourriture = typeNourriture;
+        this.coolDown = coolDown;
     }
 
-    public Nourriture(int coolDown, Nourritures typeNourriture, Objet o) {
-        super(o);
-        this.coolDown = coolDown;
-        this.typeNourriture = typeNourriture;
+    // ================= GÉNÉRATION ALÉATOIRE =================
+
+    private int genererCoolDownAleatoire(Nourritures type) {
+        Random r = new Random();
+        return switch (type) {
+            case ALCOHOOL -> 2 + r.nextInt(2);     // entre 2 et 3 tours
+            case LEGUMBRE -> 3 + r.nextInt(3);     // entre 3 et 5 tours
+            case BOISSONRICHE -> 1 + r.nextInt(2); // entre 1 et 2 tours
+            case POMMEDOR -> 4 + r.nextInt(3);     // entre 4 et 6 tours
+        };
     }
 
-    // --- Getters / Setters ---
+    // ================= GETTERS / SETTERS =================
+
     public int getCoolDown() {
         return coolDown;
     }
 
-    public Nourritures getTypeNourriture() {
-        return typeNourriture;
-    }
-
     public void setCoolDown(int coolDown) {
         this.coolDown = coolDown;
+    }
+
+    public Nourritures getTypeNourriture() {
+        return typeNourriture;
     }
 
     public void setTypeNourriture(Nourritures typeNourriture) {
@@ -63,13 +110,13 @@ public class Nourriture extends Objet implements ObjetUtilisable {
     }
 
     @Override
-    public Point2D getPos() {
-        return pos;
+    public void setNom(String nom) {
+        this.nom = nom;
     }
 
     @Override
-    public void setNom(String nom) {
-        this.nom = nom;
+    public Point2D getPos() {
+        return pos;
     }
 
     @Override
@@ -77,134 +124,72 @@ public class Nourriture extends Objet implements ObjetUtilisable {
         this.pos = pos;
     }
 
-    // --- Méthode principale : applique l'effet au personnage ---
-    /**
-     *
-     * @param p
-     */
+    // ================= MÉCANIQUE D’EFFET =================
+
     @Override
     public void appliquerEffet(Personnage p) {
         switch (this.typeNourriture) {
             case ALCOHOOL -> {
-                // L'alcool diminue la probabilité d'attaque de 20 points
-                // et augmente la probabilité de parade de 20 points (sans dépasser 100)
-                if (p.getPageAtt() > 20) {
-                    p.setPageAtt(p.getPageAtt() - 20);
-                } else {
-                    p.setPageAtt(0);
-                }
-
-                if (p.getPagePar() > 80) {
-                    p.setPagePar(100);
-                } else {
-                    p.setPagePar(p.getPagePar() + 20);
-                }
+                p.setPageAtt(Math.max(0, p.getPageAtt() - 20));
+                p.setPagePar(Math.min(100, p.getPagePar() + 20));
             }
-
             case LEGUMBRE -> {
-                // Le légume augmente la probabilité d'attaque et de parade de 30 points
-                if (p.getPageAtt() <= 70) {
-                    p.setPageAtt(p.getPageAtt() + 30);
-                } else {
-                    p.setPageAtt(100);
-                }
-
-                if (p.getPagePar() <= 70) {
-                    p.setPagePar(p.getPagePar() + 30);
-                } else {
-                    p.setPagePar(100);
-                }
+                p.setPageAtt(Math.min(100, p.getPageAtt() + 30));
+                p.setPagePar(Math.min(100, p.getPagePar() + 30));
             }
-
             case BOISSONRICHE -> {
-                // La boisson riche augmente le mouvement (distance maximale d’attaque) de 2
-                // mais diminue la probabilité de parade de 20 points
-                //p.setdMax(p.getdMax() + 2);
-
-                if (p.getPagePar() >= 20) {
-                    p.setPagePar(p.getPagePar() - 20);
-                } else {
-                    p.setPagePar(0);
-                }
+                p.setPagePar(Math.max(0, p.getPagePar() - 20));
             }
-
             case POMMEDOR -> {
-                // La pomme d’or augmente le mouvement de 2,
-                // et la probabilité d’attaque et de parade de 40 points
-                //p.setdMax(p.getdMax() + 2);
-
-                if (p.getPageAtt() <= 60) {
-                    p.setPageAtt(p.getPageAtt() + 40);
-                } else {
-                    p.setPageAtt(100);
-                }
-
-                if (p.getPagePar() <= 60) {
-                    p.setPagePar(p.getPagePar() + 40);
-                } else {
-                    p.setPagePar(100);
-                }
+                p.setPageAtt(Math.min(100, p.getPageAtt() + 40));
+                p.setPagePar(Math.min(100, p.getPagePar() + 40));
             }
         }
     }
 
-    // --- Méthode pour retirer l'effet lorsque la durée est écoulée ---
     @Override
     public void retirerEffet(Personnage p) {
         switch (this.typeNourriture) {
             case ALCOHOOL -> {
-                // On annule les modifications précédentes
                 p.setPageAtt(p.getPageAtt() + 20);
                 p.setPagePar(p.getPagePar() - 20);
             }
-
             case LEGUMBRE -> {
                 p.setPageAtt(p.getPageAtt() - 30);
                 p.setPagePar(p.getPagePar() - 30);
             }
-
             case BOISSONRICHE -> {
-                //p.setdMax(p.getdMax() - 2);
                 p.setPagePar(p.getPagePar() + 20);
             }
-
             case POMMEDOR -> {
-                //p.setdMax(p.getdMax() - 2);
                 p.setPageAtt(p.getPageAtt() - 40);
                 p.setPagePar(p.getPagePar() - 40);
             }
         }
 
-        // On s'assure que les valeurs restent dans les limites [0,100]
-        if (p.getPageAtt() < 0) {
-            p.setPageAtt(0);
-        }
-        if (p.getPagePar() < 0) {
-            p.setPagePar(0);
-        }
-        if (p.getPageAtt() > 100) {
-            p.setPageAtt(100);
-        }
-        if (p.getPagePar() > 100) {
-            p.setPagePar(100);
-        }
+        // 🔒 Clamp entre 0 et 100
+        p.setPageAtt(Math.max(0, Math.min(100, p.getPageAtt())));
+        p.setPagePar(Math.max(0, Math.min(100, p.getPagePar())));
     }
 
-    // --- Méthode pour décrémenter la durée de l'effet à chaque tour ---
     @Override
     public void decrementerDuree() {
-        if (coolDown > 0) {
-            coolDown--;
-        }
+        if (coolDown > 0) coolDown--;
     }
 
-    // --- Indique si l'effet est encore actif ---
     @Override
     public boolean estActif() {
         return coolDown > 0;
     }
-    
 
+    // ================= SAUVEGARDE EN BASE =================
+
+    /**
+     * Sauvegarde la nourriture dans la base de données, liée à une partie.
+     * 
+     * @param conn connexion JDBC ouverte
+     * @param idPartie identifiant de la partie
+     */
     public void saveToDB(Connection conn, int idPartie) {
         String sql = """
             INSERT INTO Nourriture (nom, description, posX, posY, id_partie)
@@ -218,8 +203,7 @@ public class Nourriture extends Objet implements ObjetUtilisable {
             ps.setInt(4, this.getPos().getY());
             ps.setInt(5, idPartie);
             ps.executeUpdate();
-
-            System.out.println("✅ Nourriture insérée en base");
+            System.out.println("✅ Nourriture insérée en base : " + this.getNom());
         } catch (SQLException e) {
             System.err.println("Erreur Nourriture.saveToDB : " + e.getMessage());
         }

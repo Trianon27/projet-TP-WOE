@@ -62,26 +62,30 @@ public class Joueur implements Analyze {
     public void setHero(Personnage hero) {
         this.hero = hero;
     }
-
-    // ===================== MÉTHODE PRINCIPALE =====================
     /**
-     * Boucle principale d’action du joueur.
-     * Ajoute l’option "0 - Sauvegarder la partie" (BDD PostgreSQL).
-     *
-     * @param positionWorld Ensemble des positions actuellement occupées
-     * @param creatures Liste des créatures présentes dans le monde
-     * @param objets Liste des objets disponibles dans le monde
-     * @param world Référence du monde
-     * @param conn Connexion active à la base
+     * Implémentation minimale requise par l'interface Analyze.
+     * Cette version est utilisée par le moteur IA (non connectée à la base).
+     * Ici, on appelle simplement la version complète avec les mêmes paramètres,
+     * mais sans connexion.
      */
-    public void analyzer(Set<Point2D> positionWorld, List<Creature> creatures, List<Objet> objets, int tailleMonde) {
-        // surcharge non utilisée sans base
-        throw new UnsupportedOperationException("Utiliser analyzer(..., world, conn)");
+    @Override
+    public void analyzer(Set<Point2D> positionWorld, List<Creature> creatures,
+                         List<Objet> objets, int tailleMonde) {
+        // Par défaut : simple appel vers la version enrichie sans sauvegarde.
+        // (utile quand le monde tourne sans base de données)
+        analyzer(positionWorld, creatures, objets, null, null);
     }
 
-    public void analyzer(Set<Point2D> positionWorld, List<Creature> creatures, List<Objet> objets,
-                         World world, Connection conn) {
+    /**
+    * Variante de analyzer pour le mode connecté à la base.
+    * Appelée par World.tourDeJour(..., Connection).
+    */
+    public void analyzer(Set<Point2D> positionWorld, List<Creature> creatures,
+                         List<Objet> objets, World world, Connection conn) {
+
+        // Appelle la version complète avec sauvegarde
         Scanner sc = new Scanner(System.in);
+        Point2D posHero = this.hero.getPos();
 
         do {
             actionEffectuee = false;
@@ -100,9 +104,10 @@ public class Joueur implements Analyze {
                     System.out.println("💾 Sauvegarde en cours...");
                     world.saveWorldToDB(conn, this);
                     System.out.println("✅ Partie sauvegardée !");
-                    actionEffectuee = false; // retourne au menu
+                    // on ne quitte pas la boucle pour continuer à jouer
+                    actionEffectuee = false;
                 }
-                case 1 -> deplacerController(creatures, tailleMonde);
+                case 1 -> deplacerController(creatures, world.TAILLE_MONDE);
                 case 2 -> attaquerController(creatures, positionWorld);
                 case 3 -> interactionController(objets, positionWorld);
                 case 4 -> utiliserObjetController();

@@ -1,14 +1,7 @@
 package org.centrale.objet.woe.projettp;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
+import java.sql.*;
+import java.util.*;
 
 /**
  * La classe {@code Personnage} représente un personnage du jeu.
@@ -20,96 +13,66 @@ import java.sql.SQLException;
  *
  * <p>
  * Cette classe sert de base pour des personnages spécialisés comme
- * {@link Archer}.
+ * {@link Archer}, {@link Guerrier} ou {@link Paysan}.
  * </p>
  *
- * @author srodr
+ * @author
+ * @version 3.0 (fusion complète)
  */
-public class Personnage extends Creature {
+public class Personnage extends Creature implements Analyze {
 
-    private List<ObjetUtilisable> effetsActifs= new ArrayList<>();
+    /** Liste des effets actifs sur le personnage (potions, nourritures, etc.) */
+    private List<ObjetUtilisable> effetsActifs = new ArrayList<>();
+
+    /** Liste des objets possédés (inventaire). */
     private List<Objet> inventaire = new ArrayList<>();
 
     // ================= CONSTRUCTEURS =================
-    /**
-     * Constructeur par défaut.
-     * <p>
-     * Initialise un personnage avec les valeurs par défaut de {@link Creature}.
-     * </p>
-     */
+
+    /** Constructeur par défaut. */
     public Personnage() {
         super();
     }
 
-    /**
-     * Constructeur complet.
-     *
-     * @param nom Nom du personnage
-     * @param etat État vivant ou mort
-     * @param pVie Points de vie
-     * @param dAtt Dégâts d'attaque
-     * @param pPar Points de parade
-     * @param paAtt Pourcentage d'attaque par tour
-     * @param paPar Pourcentage de parade par tour
-     * @param dMax Distance maximale d'attaque
-     * @param p Position initiale (Point2D)
-     * @param distanceVision Distance de vision
-     */
-    public Personnage(String nom, boolean etat, int pVie, int dAtt, int pPar, int paAtt, int paPar, int dMax, Point2D p, int distanceVision) {
+    /** Constructeur complet. */
+    public Personnage(String nom, boolean etat, int pVie, int dAtt, int pPar, int paAtt,
+                      int paPar, int dMax, Point2D p, int distanceVision) {
         super(nom, etat, pVie, dAtt, pPar, paAtt, paPar, p, dMax, distanceVision);
     }
 
-    /**
-     * Constructeur par copie.
-     *
-     * @param perso Personnage à copier
-     */
+    /** Constructeur par copie. */
     public Personnage(Personnage perso) {
         super(perso);
+        this.effetsActifs = new ArrayList<>(perso.effetsActifs);
+        this.inventaire = new ArrayList<>(perso.inventaire);
     }
+
+    // ================= GETTERS / SETTERS =================
 
     public List<ObjetUtilisable> getEffetsActifs() {
         return effetsActifs;
+    }
+
+    public void setEffetsActifs(List<ObjetUtilisable> effetsActifs) {
+        this.effetsActifs = effetsActifs;
     }
 
     public List<Objet> getInventaire() {
         return inventaire;
     }
 
-    
-    
-    public void setEffetsActifs(List<ObjetUtilisable> effetsActifs) {
-        this.effetsActifs = effetsActifs;
-    }
-
     public void setInventaire(List<Objet> inventaire) {
         this.inventaire = inventaire;
     }
-    
-    
-    
-    
 
     // ================= MÉTHODES =================
+
     /**
-     * Permet au personnage de prendre un objet situé sur sa position.
-     * <p>
-     * Cette méthode vérifie d'abord que la position du personnage correspond à
-     * la position de l'objet. Ensuite, selon le type de l'objet, elle applique
-     * ses effets :
-     * </p>
-     * <ul>
-     * <li>{@link PotionSoin} : augmente les points de vie du personnage.</li>
-     * <li>{@link Epee} : augmente les dégâts d'attaque du personnage.</li>
-     * <li>Autres types : aucune action.</li>
-     * </ul>
-     * <p>
-     * Après l'interaction, l'objet est retiré de l'ensemble des positions
-     * occupées du monde {@code positionWorld}.
-     * </p>
+     * Permet au personnage de ramasser un objet situé sur sa position et d’en
+     * appliquer les effets.
      *
-     * @param o L'objet à ramasser
-     * @param positionWorld L'ensemble des positions occupées dans le monde
+     * @param o L’objet à ramasser
+     * @param positionWorld L’ensemble des positions occupées du monde
      */
     public void prendObjet(Objet o, Set<Point2D> positionWorld) {
         if (this.getPos().equals(o.getPosition())) {
@@ -117,19 +80,19 @@ public class Personnage extends Creature {
             switch (o) {
                 case PotionSoin potion -> {
                     this.setPtVie(this.getPtVie() + potion.getpVie());
-                    System.out.println("Potion consommée, vie actuelle : " + this.getPtVie());
+                    System.out.println("💊 Potion consommée, vie actuelle : " + this.getPtVie());
                 }
                 case Epee epee -> {
                     this.setDegAtt(this.getDegAtt() + epee.getpAtt());
-                    System.out.println("Épée prise, attaque actuelle : " + this.getDegAtt());
+                    System.out.println("⚔️ Épée prise, attaque actuelle : " + this.getDegAtt());
                 }
                 case ObjetUtilisable utilisable -> {
                     utilisable.appliquerEffet(this);
                     this.effetsActifs.add(utilisable);
-                    System.out.println("Objet utilisable activé : " + o.getNom());
+                    System.out.println("✨ Objet utilisable activé : " + o.getNom());
                 }
                 default -> {
-                    // Aucun effet
+                    // Aucun effet particulier
                 }
             }
 
@@ -138,38 +101,94 @@ public class Personnage extends Creature {
         }
     }
 
+    /**
+     * Met à jour les effets actifs (décrémentation et suppression si expirés).
+     */
     public void mettreAJourEffets() {
         Iterator<ObjetUtilisable> it = effetsActifs.iterator();
         while (it.hasNext()) {
             ObjetUtilisable effet = it.next();
 
-            // On décrémente la durée de vie de l'effet
             effet.decrementerDuree();
 
-            // Si l'effet n'est plus actif, on le retire
             if (!effet.estActif()) {
                 effet.retirerEffet(this);
                 it.remove();
-                System.out.println("Effet terminé et retiré : " + effet);
+                System.out.println("⏳ Effet terminé et retiré : " + effet);
             }
         }
     }
-    
-    
 
+    /**
+     * Analyse le comportement automatique d’un PNJ (déplacement ou combat).
+     * @param positionWorld
+     * @param creatures
+     */
+    @Override
+    public void analyzer(Set<Point2D> positionWorld, List<Creature> creatures,
+                         List<Objet> objets, int tailleMonde) {
+
+        if (this instanceof Paysan) {
+            this.deplacementAleatoire(positionWorld, tailleMonde);
+            return;
+        }
+
+        Random rand = new Random();
+        Point2D posPersonnage = this.getPos();
+
+        // Liste des cibles adjacentes
+        List<Creature> ciblesAdjacentes = new ArrayList<>();
+        for (Creature c : creatures) {
+            if (c != this) {
+                double dx = Math.abs(c.getPos().getX() - posPersonnage.getX());
+                double dy = Math.abs(c.getPos().getY() - posPersonnage.getY());
+                if (dx <= this.getDistAttMax() && dy <= this.getDistAttMax() && !(dx == 0 && dy == 0)) {
+                    ciblesAdjacentes.add(c);
+                }
+            }
+        }
+
+        int action = rand.nextInt(3);
+        switch (action) {
+            case 0 -> this.deplacementAleatoire(positionWorld, tailleMonde);
+            case 1 -> {
+                if (!ciblesAdjacentes.isEmpty()) {
+                    Creature cible = ciblesAdjacentes.get(rand.nextInt(ciblesAdjacentes.size()));
+                    System.out.println(this.getNom() + " attaque " + cible.getNom() + " !");
+                    if (this instanceof Combattant combattant) {
+                        combattant.combattre(cible, positionWorld, creatures);
+                    }
+                } else {
+                    System.out.println(this.getNom() + " veut attaquer mais il n'y a personne à proximité.");
+                }
+            }
+            default -> {
+                // Ne rien faire
+            }
+        }
+    }
+
+    // ===================== SAUVEGARDE EN BASE =====================
+
+    /**
+     * Sauvegarde le personnage dans la base de données (table Personnage),
+     * puis appelle la méthode spécifique selon le type concret (Archer, Guerrier, etc.).
+     *
+     * @param conn connexion JDBC ouverte
+     * @param idPartie identifiant de la partie à laquelle appartient ce personnage
+     */
     public void saveToDB(Connection conn, int idPartie) {
-        try {
-            String sql = """
-                INSERT INTO Personnage (
-                    type_personnage, nom, ptVie, degAtt, ptPar,
-                    pourcentageAtt, pourcentagePar, distAttMax,
-                    distVue, posX, posY, id_partie
-                )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                RETURNING id_personnage
-            """;
+        String sql = """
+            INSERT INTO Personnage (
+                type_personnage, nom, ptVie, degAtt, ptPar,
+                pourcentageAtt, pourcentagePar, distAttMax,
+                distVue, posX, posY, id_partie
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            RETURNING id_personnage
+        """;
 
-            PreparedStatement ps = conn.prepareStatement(sql);
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, this.getClass().getSimpleName());
             ps.setString(2, this.getNom());
             ps.setInt(3, this.getPtVie());
@@ -187,7 +206,7 @@ public class Personnage extends Creature {
             rs.next();
             int idPersonnage = rs.getInt("id_personnage");
 
-            // Appel à la méthode spécifique selon le type
+            // Appel de la méthode spécifique selon le type concret
             if (this instanceof Archer archer) {
                 archer.saveArcher(conn, idPersonnage);
             } else if (this instanceof Guerrier guerrier) {
@@ -196,10 +215,10 @@ public class Personnage extends Creature {
                 paysan.savePaysan(conn, idPersonnage);
             }
 
-            System.out.println("✅ " + this.getClass().getSimpleName() + " inséré en base (ID " + idPersonnage + ")");
+            System.out.println("✅ " + this.getClass().getSimpleName()
+                    + " inséré en base (ID " + idPersonnage + ")");
         } catch (SQLException e) {
             System.err.println("❌ Erreur Personnage.saveToDB : " + e.getMessage());
         }
     }
-
 }
