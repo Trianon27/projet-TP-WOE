@@ -15,40 +15,39 @@ import java.util.Set;
  * Le joueur contrôle un {@link Personnage} jouable (héros) et peut interagir
  * avec le monde à travers plusieurs actions :
  * </p>
- * 
+ *
  * <ul>
- *   <li>Se déplacer dans le monde.</li>
- *   <li>Attaquer des créatures adjacentes.</li>
- *   <li>Interagir avec des objets (ramasser, utiliser, stocker).</li>
- *   <li>Utiliser les objets de son inventaire.</li>
- *   <li>Ou ne rien faire durant un tour.</li>
+ * <li>Se déplacer dans le monde.</li>
+ * <li>Attaquer des créatures adjacentes.</li>
+ * <li>Interagir avec des objets (ramasser, utiliser, stocker).</li>
+ * <li>Utiliser les objets de son inventaire.</li>
+ * <li>Ou ne rien faire durant un tour.</li>
  * </ul>
  *
  * <p>
- * Cette classe gère la boucle d’interaction principale du joueur (menu console),
- * permettant de choisir les actions à effectuer à chaque tour.  
- * Le joueur agit uniquement via des entrées utilisateur fournies par la console.
+ * Cette classe gère la boucle d’interaction principale du joueur (menu
+ * console), permettant de choisir les actions à effectuer à chaque tour. Le
+ * joueur agit uniquement via des entrées utilisateur fournies par la console.
  * </p>
  *
  * @author srodr
  * @version 3.0 (fusion complète)
  */
-public class Joueur {
+public class Joueur implements Analyze {
 
-    /** 
-     * Personnage contrôlé par le joueur. 
-     * Peut être une instance de {@link Guerrier}, {@link Archer}, etc.
+    /**
+     * Personnage contrôlé par le joueur. Peut être une instance de
+     * {@link Guerrier}, {@link Archer}, etc.
      */
     public Personnage hero;
 
-    /** 
-     * Indique si le joueur a effectué une action durant le tour courant. 
-     * Sert à gérer la boucle du menu d’actions.
+    /**
+     * Indique si le joueur a effectué une action durant le tour courant. Sert à
+     * gérer la boucle du menu d’actions.
      */
     private boolean actionEffectuee;
 
     // ===================== CONSTRUCTEUR =====================
-
     /**
      * Constructeur par défaut.
      * <p>
@@ -60,19 +59,20 @@ public class Joueur {
     }
 
     // ===================== MÉTHODE PRINCIPALE =====================
-
     /**
      * Boucle principale d’action du joueur.
      * <p>
-     * Présente les options disponibles selon la position du héros et les entités présentes :
-     * déplacement, attaque, interaction, utilisation d’objet ou inactivité.
+     * Présente les options disponibles selon la position du héros et les
+     * entités présentes : déplacement, attaque, interaction, utilisation
+     * d’objet ou inactivité.
      * </p>
      *
      * @param positionWorld Ensemble des positions actuellement occupées
      * @param creatures Liste des créatures présentes dans le monde
      * @param objets Liste des objets disponibles dans le monde
      */
-    public void analyzer(Set<Point2D> positionWorld, List<Creature> creatures, List<Objet> objets) {
+    @Override
+    public void analyzer(Set<Point2D> positionWorld, List<Creature> creatures, List<Objet> objets, int tailleMonde) {
         Scanner sc = new Scanner(System.in);
         Point2D posHero = this.hero.getPos();
 
@@ -85,14 +85,14 @@ public class Joueur {
 
             // 1️⃣ Déplacement
             options.add("Se déplacer");
-            actions.add(() -> deplacerController(creatures));
+            actions.add(() -> deplacerController(creatures, tailleMonde));
 
             // 2️⃣ Attaque (si cibles proches)
             List<Creature> ciblesAdjacentes = new ArrayList<>();
             for (Creature c : creatures) {
                 double dx = Math.abs(c.getPos().getX() - posHero.getX());
                 double dy = Math.abs(c.getPos().getY() - posHero.getY());
-                if (dx <= 1 && dy <= 1 && !(dx == 0 && dy == 0)) {
+                if (dx <= this.hero.getDistAttMax() && dy <= this.hero.getDistAttMax() && !(dx == 0 && dy == 0)) {
                     ciblesAdjacentes.add(c);
                 }
             }
@@ -141,13 +141,15 @@ public class Joueur {
     }
 
     // ===================== CONTRÔLEURS =====================
-
     /**
-     * Gère le déplacement du héros, en vérifiant qu’aucune créature n’occupe la case cible.
-     * 
-     * @param creatures Liste de toutes les créatures pour détecter les collisions
+     * Gère le déplacement du héros, en vérifiant qu’aucune créature n’occupe la
+     * case cible.
+     *
+     * @param creatures Liste de toutes les créatures pour détecter les
+     * collisions
+     * @param tailleMonde
      */
-    public void deplacerController(List<Creature> creatures) {
+    public void deplacerController(List<Creature> creatures, int tailleMonde) {
         Scanner sc = new Scanner(System.in);
         boolean choixValide;
 
@@ -166,18 +168,47 @@ public class Joueur {
             }
 
             switch (choix) {
-                case 1 -> dy = -1;
-                case 2 -> dy = 1;
-                case 3 -> dx = -1;
-                case 4 -> dx = 1;
-                case 5 -> { dx = -1; dy = -1; }
-                case 6 -> { dx = 1; dy = -1; }
-                case 7 -> { dx = -1; dy = 1; }
-                case 8 -> { dx = 1; dy = 1; }
-                default -> { System.out.println("Choix invalide !"); choixValide = false; continue; }
+                case 1 ->
+                    dy = -1;
+                case 2 ->
+                    dy = 1;
+                case 3 ->
+                    dx = -1;
+                case 4 ->
+                    dx = 1;
+                case 5 -> {
+                    dx = -1;
+                    dy = -1;
+                }
+                case 6 -> {
+                    dx = 1;
+                    dy = -1;
+                }
+                case 7 -> {
+                    dx = -1;
+                    dy = 1;
+                }
+                case 8 -> {
+                    dx = 1;
+                    dy = 1;
+                }
+                default -> {
+                    System.out.println("Choix invalide !");
+                    choixValide = false;
+                    continue;
+                }
             }
 
-            Point2D newPos = new Point2D(this.hero.getPos().getX() + dx, this.hero.getPos().getY() + dy);
+            Point2D currentPos = this.hero.getPos();
+            Point2D newPos = new Point2D(currentPos.getX() + dx, currentPos.getY() + dy);
+
+            // Vérification des limites du monde
+            if (newPos.getX() < 0 || newPos.getX() >= tailleMonde || newPos.getY() < 0 || newPos.getY() >= tailleMonde) {
+                System.out.println("❌ Déplacement hors du monde impossible !");
+                choixValide = false;
+                continue;
+            }
+
             boolean bloque = creatures.stream().anyMatch(c -> c.getPos().equals(newPos));
 
             if (bloque) {
@@ -194,10 +225,11 @@ public class Joueur {
 
     /**
      * Gère le système d’attaque du joueur contre les créatures proches.
-     * 
+     *
      * @param ciblesAdjacentes Liste des créatures à portée d’attaque
      * @param positionWorld Ensemble des positions occupées
-     * @param creatures Liste complète des créatures (pour mise à jour après combat)
+     * @param creatures Liste complète des créatures (pour mise à jour après
+     * combat)
      */
     public void attaqueController(List<Creature> ciblesAdjacentes, Set<Point2D> positionWorld, List<Creature> creatures) {
         Scanner sc = new Scanner(System.in);
@@ -244,13 +276,14 @@ public class Joueur {
     /**
      * Gère les interactions avec les objets présents dans le monde :
      * <ul>
-     *   <li>Utilisation immédiate de l’objet</li>
-     *   <li>Ajout à l’inventaire (si {@link ObjetUtilisable})</li>
+     * <li>Utilisation immédiate de l’objet</li>
+     * <li>Ajout à l’inventaire (si {@link ObjetUtilisable})</li>
      * </ul>
      *
      * @param o Objet sur la même case que le joueur
      * @param positionWorld Ensemble des positions occupées
-     * @param objets Liste des objets existants dans le monde (mise à jour en cas de retrait)
+     * @param objets Liste des objets existants dans le monde (mise à jour en
+     * cas de retrait)
      */
     public void interactionController(Objet o, Set<Point2D> positionWorld, List<Objet> objets) {
         Scanner sc = new Scanner(System.in);
@@ -288,7 +321,8 @@ public class Joueur {
                     actionEffectuee = false;
                     choixValide = true;
                 }
-                default -> System.out.println("Option invalide !");
+                default ->
+                    System.out.println("Option invalide !");
             }
         } while (!choixValide);
     }
@@ -296,8 +330,8 @@ public class Joueur {
     /**
      * Permet au joueur d’utiliser un objet de son inventaire.
      * <p>
-     * Si l’objet implémente {@link ObjetUtilisable}, son effet est appliqué au héros
-     * puis l’objet est retiré de l’inventaire.
+     * Si l’objet implémente {@link ObjetUtilisable}, son effet est appliqué au
+     * héros puis l’objet est retiré de l’inventaire.
      * </p>
      */
     public void utiliserObjetController() {

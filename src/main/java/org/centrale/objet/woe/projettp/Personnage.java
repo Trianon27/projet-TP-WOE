@@ -3,6 +3,7 @@ package org.centrale.objet.woe.projettp;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
 /**
@@ -20,9 +21,9 @@ import java.util.Set;
  *
  * @author srodr
  */
-public class Personnage extends Creature {
+public class Personnage extends Creature implements Analyze {
 
-    private List<ObjetUtilisable> effetsActifs= new ArrayList<>();
+    private List<ObjetUtilisable> effetsActifs = new ArrayList<>();
     private List<Objet> inventaire = new ArrayList<>();
 
     // ================= CONSTRUCTEURS =================
@@ -71,8 +72,6 @@ public class Personnage extends Creature {
         return inventaire;
     }
 
-    
-    
     public void setEffetsActifs(List<ObjetUtilisable> effetsActifs) {
         this.effetsActifs = effetsActifs;
     }
@@ -80,10 +79,6 @@ public class Personnage extends Creature {
     public void setInventaire(List<Objet> inventaire) {
         this.inventaire = inventaire;
     }
-    
-    
-    
-    
 
     // ================= MÉTHODES =================
     /**
@@ -147,6 +142,56 @@ public class Personnage extends Creature {
                 it.remove();
                 System.out.println("Effet terminé et retiré : " + effet);
             }
+        }
+    }
+
+    @Override
+    public void analyzer(Set<Point2D> positionWorld, List<Creature> creatures, List<Objet> objets, int tailleMonde) {
+
+        //Check if Paysan
+        if (this instanceof Paysan) {
+            this.deplacementAleatoire(positionWorld, tailleMonde);
+        } else {
+
+            Random rand = new Random();
+
+            // Le héros (ce PNJ lui-même)
+            Point2D posPersonnage = this.getPos();
+
+            // Liste des créatures adjacentes (pour une éventuelle attaque)
+            List<Creature> ciblesAdjacentes = new ArrayList<>();
+            for (Creature c : creatures) {
+                if (c != this) { // éviter de s'ajouter soi-même
+                    double dx = Math.abs(c.getPos().getX() - posPersonnage.getX());
+                    double dy = Math.abs(c.getPos().getY() - posPersonnage.getY());
+                    if (dx <= this.getDistAttMax() && dy <= this.getDistAttMax() && !(dx == 0 && dy == 0)) {
+                        ciblesAdjacentes.add(c);
+                    }
+                }
+            }
+            int action = rand.nextInt(3);
+
+            switch (action) {
+                case 0 -> { // Se déplacer aléatoirement
+                    this.deplacementAleatoire(positionWorld, tailleMonde);
+                }
+                case 1 -> {
+                    if (!ciblesAdjacentes.isEmpty()) {
+                        Creature cible = ciblesAdjacentes.get(rand.nextInt(ciblesAdjacentes.size()));
+                        System.out.println(this.getNom() + " attaque " + cible.getNom() + " !");
+                        if (this instanceof Combattant combattant) {
+                            combattant.combattre(cible, positionWorld, creatures);
+                        }
+                    } else {
+                        System.out.println(this.getNom() + " veut attaquer mais il n'y a personne à proximité.");
+                    }
+
+                }
+                default -> {
+                }
+
+            }
+
         }
     }
 

@@ -1,5 +1,7 @@
 package org.centrale.objet.woe.projettp;
 
+import java.util.Random;
+
 /**
  * Classe représentant une Nourriture pouvant être utilisée par un Personnage.
  * Elle applique un effet temporaire (bonus/malus) sur certaines
@@ -21,22 +23,39 @@ public class Nourriture extends Objet implements ObjetUtilisable {
     private Nourritures typeNourriture;
 
     // --- Constructeurs ---
-    public Nourriture(int coolDown, Nourritures typeNourriture) {
-        this.coolDown = coolDown;
+    public Nourriture(Nourritures typeNourriture) {
+        this.coolDown = genererCoolDownAleatoire(typeNourriture);
         this.typeNourriture = typeNourriture;
     }
-
-    public Nourriture(int coolDown, Nourritures typeNourriture, String nom, String description, Point2D position) {
+    
+    public Nourriture( Nourritures typeNourriture, String nom, String description, Point2D position) {
         super(nom, description, position);
-        this.coolDown = coolDown;
+        this.coolDown = genererCoolDownAleatoire(typeNourriture);
         this.typeNourriture = typeNourriture;
     }
 
-    public Nourriture(int coolDown, Nourritures typeNourriture, Objet o) {
+    public Nourriture(Nourritures typeNourriture, Objet o) {
         super(o);
-        this.coolDown = coolDown;
+        this.coolDown = genererCoolDownAleatoire(typeNourriture);
         this.typeNourriture = typeNourriture;
     }
+    
+    
+    
+    // Géneration nourriture
+    private int genererCoolDownAleatoire(Nourritures type) {
+        Random r = new Random();
+        // Durée différente selon le type
+        return switch (type) {
+            case ALCOHOOL -> 2 + r.nextInt(2);      // entre 2 et 3 tours
+            case LEGUMBRE -> 3 + r.nextInt(3);      // entre 3 et 5 tours
+            case BOISSONRICHE -> 1 + r.nextInt(2);  // entre 1 et 2 tours
+            case POMMEDOR -> 4 + r.nextInt(3);      // entre 4 et 6 tours
+        };
+    }
+
+    
+    
 
     // --- Getters / Setters ---
     public int getCoolDown() {

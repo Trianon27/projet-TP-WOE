@@ -9,47 +9,60 @@ import java.util.Random;
 import java.util.Set;
 
 /**
- * La classe {@code Creature} représente un être vivant du jeu
- * avec ses caractéristiques de combat, son état (vivant ou mort) 
- * et sa position dans le monde.
+ * La classe {@code Creature} représente un être vivant du jeu avec ses
+ * caractéristiques de combat, son état (vivant ou mort) et sa position dans le
+ * monde.
  * <p>
- * Une créature peut se déplacer, attaquer, être vaincue et afficher 
- * ses informations principales.
+ * Une créature peut se déplacer, attaquer, être vaincue et afficher ses
+ * informations principales.
  * </p>
- * 
+ *
  * @author srodr
  */
 public class Creature extends ElementDeJeu implements Deplacable {
 
     // ================= ATTRIBUTS =================
-    
-    /** État de la créature (vivant ou mort) */
-    private boolean etat; 
+    /**
+     * État de la créature (vivant ou mort)
+     */
+    private boolean etat;
 
-    /** Points de vie de la créature */
+    /**
+     * Points de vie de la créature
+     */
     private int ptVie;
 
-    /** Dégâts infligés lors d’une attaque */
+    /**
+     * Dégâts infligés lors d’une attaque
+     */
     private int degAtt;
 
-    /** Points de parade permettant de réduire les dégâts reçus */
+    /**
+     * Points de parade permettant de réduire les dégâts reçus
+     */
     private int ptPar;
 
-    /** Pourcentage de réussite d’attaque */
+    /**
+     * Pourcentage de réussite d’attaque
+     */
     private int pageAtt;
 
-    /** Pourcentage de réussite de parade */
+    /**
+     * Pourcentage de réussite de parade
+     */
     private int pagePar;
-    
-    /** Distance maximale d’attaque */
+
+    /**
+     * Distance maximale d’attaque
+     */
     private int distAttMax;
 
-    
-    /** Distance de vision de la créature */
-    private int distanceVision; 
+    /**
+     * Distance de vision de la créature
+     */
+    private int distanceVision;
 
     // ================= CONSTRUCTEURS =================
-
     /**
      * Construit une créature avec toutes ses caractéristiques.
      *
@@ -65,7 +78,7 @@ public class Creature extends ElementDeJeu implements Deplacable {
      * @param distanceVision Distance de vision
      */
     public Creature(String nom, boolean etat, int pVie, int dAtt, int pPar, int paAtt, int paPar, Point2D p, int distAttMax, int distanceVision) {
-        super(nom,p);
+        super(nom, p);
         this.etat = etat;
         this.ptVie = pVie;
         this.degAtt = dAtt;
@@ -73,7 +86,7 @@ public class Creature extends ElementDeJeu implements Deplacable {
         this.pageAtt = paAtt;
         this.pagePar = paPar;
         this.distAttMax = distAttMax;
-        this.distanceVision = distanceVision; 
+        this.distanceVision = distanceVision;
     }
 
     /**
@@ -83,14 +96,14 @@ public class Creature extends ElementDeJeu implements Deplacable {
      */
     public Creature(Creature c) {
         super(c);
-        this.etat = c.etat; 
+        this.etat = c.etat;
         this.ptVie = c.ptVie;
         this.degAtt = c.degAtt;
         this.ptPar = c.ptPar;
         this.pageAtt = c.pageAtt;
         this.pagePar = c.pagePar;
         this.distAttMax = c.distAttMax;
-        this.distanceVision = c.distanceVision; 
+        this.distanceVision = c.distanceVision;
     }
 
     /**
@@ -98,71 +111,86 @@ public class Creature extends ElementDeJeu implements Deplacable {
      */
     public Creature() {
         super();
-        this.etat = true; 
+        this.etat = true;
         this.ptVie = 50;
         this.degAtt = 5;
         this.ptPar = 2;
         this.pageAtt = 50;
         this.pagePar = 30;
         this.distAttMax = 1;
-        this.distanceVision = 1; 
+        this.distanceVision = 1;
     }
 
     // ================= GETTERS / SETTERS =================
-
-
-    
-    /** @return les points de vie actuels */
+    /**
+     * @return les points de vie actuels
+     */
     public int getPtVie() {
         return ptVie;
     }
 
-    /** @param ptVie nouveaux points de vie */
+    /**
+     * @param ptVie nouveaux points de vie
+     */
     public void setPtVie(int ptVie) {
         this.ptVie = ptVie;
     }
 
-    /** @return les dégâts d’attaque */
+    /**
+     * @return les dégâts d’attaque
+     */
     public int getDegAtt() {
         return degAtt;
     }
 
-    /** @param degAtt nouveaux dégâts d’attaque */
+    /**
+     * @param degAtt nouveaux dégâts d’attaque
+     */
     public void setDegAtt(int degAtt) {
         this.degAtt = degAtt;
     }
 
-    /** @return les points de parade */
+    /**
+     * @return les points de parade
+     */
     public int getPtPar() {
         return ptPar;
     }
 
-    /** @param ptPar nouveaux points de parade */
+    /**
+     * @param ptPar nouveaux points de parade
+     */
     public void setPtPar(int ptPar) {
         this.ptPar = ptPar;
     }
 
-    /** @return le pourcentage de réussite d’attaque */
+    /**
+     * @return le pourcentage de réussite d’attaque
+     */
     public int getPageAtt() {
         return pageAtt;
     }
 
-    /** @param pageAtt nouveau pourcentage d’attaque */
+    /**
+     * @param pageAtt nouveau pourcentage d’attaque
+     */
     public void setPageAtt(int pageAtt) {
         this.pageAtt = pageAtt;
     }
 
-    /** @return le pourcentage de réussite de parade */
+    /**
+     * @return le pourcentage de réussite de parade
+     */
     public int getPagePar() {
         return pagePar;
     }
 
-    /** @param pagePar nouveau pourcentage de parade */
+    /**
+     * @param pagePar nouveau pourcentage de parade
+     */
     public void setPagePar(int pagePar) {
         this.pagePar = pagePar;
     }
-
-
 
     public int getDistanceVision() {
         return distanceVision;
@@ -189,7 +217,6 @@ public class Creature extends ElementDeJeu implements Deplacable {
     }
 
     // ================= MÉTHODES =================
-
     /**
      * Déplace la créature en fonction des valeurs dx et dy.
      *
@@ -204,37 +231,80 @@ public class Creature extends ElementDeJeu implements Deplacable {
     /**
      * Déplace la créature de manière aléatoire sur une case adjacente.
      * <p>
-     * La créature ne peut jamais rester immobile, elle doit bouger au moins 
+     * La créature ne peut jamais rester immobile, elle doit bouger au moins
      * d’une case autour d’elle.
      * </p>
+     * @param positionsOccupees
+     * @param tailleMonde
      */
-    public void deplaceAleatoire() {
-        if(this.etat){
-            Random rand = new Random();
-            int dx, dy;
-            do {
-                dx = rand.nextInt(-1, 2);
-                dy = rand.nextInt(-1, 2);
-            } while(dx == 0 && dy == 0);
-            this.pos.translate(dx, dy);
+    public void deplacementAleatoire(Set<Point2D> positionsOccupees, int tailleMonde) {
+        if (!this.etat) {
+            return; // ne se déplace pas s'il est inactif
         }
+        Random rand = new Random();
+        final int MAX_ESSAIS = 9;
+        int essais = 0;
+
+        Point2D anciennePos = this.pos;
+
+        while (essais < MAX_ESSAIS) {
+            int dx = rand.nextInt(3) - 1; // -1, 0, 1
+            int dy = rand.nextInt(3) - 1;
+
+            // éviter le non-déplacement
+            if (dx == 0 && dy == 0) {
+                essais++;
+                continue;
+            }
+
+            int nx = anciennePos.getX() + dx;
+            int ny = anciennePos.getY() + dy;
+
+            // nouvelle position déclarée dans la boucle => effectively final pour la lambda
+            Point2D nouvellePos = new Point2D(nx, ny);
+
+            // vérifier les limites du monde
+            boolean dansMonde = nx >= 0 && nx < tailleMonde && ny >= 0 && ny < tailleMonde;
+            if (!dansMonde) {
+                essais++;
+                continue;
+            }
+            // vérifier si la case est occupée (en utilisant lambda mais avec nouvellePos locale)
+            boolean occupee = positionsOccupees.stream().anyMatch(p -> p.equals(nouvellePos));
+
+            if (!occupee) {
+                // mettre à jour la liste des positions occupées (si nécessaire)
+                // IMPORTANT : cela suppose que equals/hashCode de Point2D sont corrects
+                positionsOccupees.remove(anciennePos);
+                positionsOccupees.add(nouvellePos);
+
+                // effectuer le déplacement
+                this.pos = nouvellePos; // ou this.pos.translate(dx, dy) si tu veux garder l'instance
+                System.out.println(this.getNom() + " se déplace en (" + nx + ", " + ny + ").");
+                return;
+            }
+            essais++;
+        }
+
+        System.out.println(this.getNom() + " ne peut pas se déplacer : cases libres non trouvées après " + MAX_ESSAIS + " essais.");
     }
-    
+
     /**
-     * Tue la créature en mettant son état à faux
-     * et en supprimant sa position de la carte du monde.
+     * Tue la créature en mettant son état à faux et en supprimant sa position
+     * de la carte du monde.
      *
      * @param positionWorld ensemble des positions occupées dans le monde
      * @param creatures
      */
-    public void mourir(Set<Point2D> positionWorld, List<Creature> creatures){
-        this.etat = false; 
+    public void mourir(Set<Point2D> positionWorld, List<Creature> creatures) {
+        this.etat = false;
         positionWorld.remove(this.pos);
         creatures.remove(this);
     }
 
     /**
-     * Affiche toutes les informations principales de la créature sur la console.
+     * Affiche toutes les informations principales de la créature sur la
+     * console.
      */
     @Override
     public void affiche() {

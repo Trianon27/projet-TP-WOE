@@ -4,6 +4,8 @@
  */
 package org.centrale.objet.woe.projettp;
 
+import java.util.Set;
+
 /**
  * Interface {@code Deplacable} définissant le comportement commun
  * à tous les éléments du jeu pouvant se déplacer dans l’espace 2D.
@@ -61,4 +63,5 @@ public interface Deplacable {
      * @param dy déplacement vertical à appliquer
      */
     void deplacer(int dx, int dy);
+    void deplacementAleatoire(Set<Point2D> positionsOccupees, int tailleMonde);
 }
