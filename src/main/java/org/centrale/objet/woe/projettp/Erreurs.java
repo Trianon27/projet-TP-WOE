@@ -7,12 +7,12 @@ import java.util.*;
 
 
 /**
- * Classe de démonstration des différents types d’exceptions et d’erreurs Java.
+ * Classe de demonstration des differents types d’exceptions et d’erreurs Java.
  * <p>
  * Cette classe illustre la gestion des exceptions via des exemples concrets,
  * afin de comprendre leur apparition et leur traitement à l’aide de blocs
- * {@code try-catch}. Elle ne dépend pas du moteur de jeu et peut être exécutée
- * indépendamment pour des tests pédagogiques.
+ * {@code try-catch}. Elle ne depend pas du moteur de jeu et peut être executee
+ * independamment pour des tests pedagogiques.
  * </p>
  *
  * <h3>Exceptions couvertes :</h3>
@@ -35,17 +35,17 @@ import java.util.*;
 public class Erreurs {
 
     /**
-     * Exécute une démonstration complète de gestion des exceptions Java.
-     * Chaque type d’erreur est provoqué, intercepté et affiché de manière contrôlée.
+     * Execute une demonstration complète de gestion des exceptions Java.
+     * Chaque type d’erreur est provoque, intercepte et affiche de manière contrôlee.
      */
     public void demonstrationErreursJava() {
-        System.out.println("=== DÉMONSTRATION DES DIFFÉRENTS TYPES D'ERREURS JAVA ===");
+        System.out.println("=== DeMONSTRATION DES DIFFeRENTS TYPES D'ERREURS JAVA ===");
 
         // NullPointerException
         System.out.println("\n1. NullPointerException:");
         try {
             Point2D pointNull = null;
-            System.out.println("Coordonnée X: " + pointNull.getX());
+            System.out.println("Coordonnee X: " + pointNull.getX());
         } catch (NullPointerException e) {
             afficherErreur(e);
         }
@@ -102,7 +102,7 @@ public class Erreurs {
         try {
             methodeRecursive(0);
         } catch (StackOverflowError e) {
-            System.out.println("❌ " + e.getClass().getSimpleName() + " détectée !");
+            System.out.println("" + e.getClass().getSimpleName() + " detectee !");
         }
 
         //  NumberFormatException
@@ -122,16 +122,16 @@ public class Erreurs {
             afficherErreur(e);
         }
 
-        // OutOfMemoryError (simulation légère)
+        // OutOfMemoryError (simulation legère)
         System.out.println("\n9. OutOfMemoryError (simulation sûre):");
         try {
             List<Point2D> grandeListe = new ArrayList<>();
             for (int i = 0; i < 1000000; i++) {
                 grandeListe.add(new Point2D(i, i));
             }
-            System.out.println("✅ Gestion mémoire réussie avec " + grandeListe.size() + " éléments.");
+            System.out.println("Gestion memoire reussie avec " + grandeListe.size() + " elements.");
         } catch (OutOfMemoryError e) {
-            System.out.println("❌ " + e.getClass().getSimpleName() + " détectée !");
+            System.out.println("" + e.getClass().getSimpleName() + " detectee !");
         }
 
         // IllegalStateException
@@ -144,29 +144,29 @@ public class Erreurs {
             afficherErreur(e);
         }
 
-        System.out.println("\n=== FIN DE LA DÉMONSTRATION ===");
+        System.out.println("\n=== FIN DE LA DeMONSTRATION ===");
     }
 
     /**
-     * Affiche proprement une exception attrapée.
-     * @param e l’exception interceptée
+     * Affiche proprement une exception attrapee.
+     * @param e l’exception interceptee
      */
     private void afficherErreur(Exception e) {
-        System.out.println("❌ Erreur attrapée: " + e.getClass().getSimpleName());
+        System.out.println("Erreur attrapee: " + e.getClass().getSimpleName());
         if (e.getMessage() != null)
             System.out.println("Message: " + e.getMessage());
     }
 
     /**
-     * Méthode utilitaire récursive pour déclencher un StackOverflowError.
-     * @param compteur compteur d'appels récursifs
+     * Methode utilitaire recursive pour declencher un StackOverflowError.
+     * @param compteur compteur d'appels recursifs
      */
     private void methodeRecursive(int compteur) {
         methodeRecursive(compteur + 1); // aucune condition d'arrêt
     }
 
     /**
-     * Génère un monstre aléatoire pour les tests d’exceptions.
+     * Genère un monstre aleatoire pour les tests d’exceptions.
      * @param id identifiant du monstre
      * @param p position
      * @return une instance de Loup ou Lapin
@@ -184,7 +184,7 @@ public class Erreurs {
     }
 
     /**
-     * Point d’entrée pour lancer les tests indépendamment.
+     * Point d’entree pour lancer les tests independamment.
      * @param args arguments de la ligne de commande
      */
     public static void main(String[] args) {
