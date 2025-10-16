@@ -51,7 +51,7 @@ public class TestWoE {
         // ======================================================
         try {
             // Simulation de 10 à 15 tours (modifiable)
-            w.tourDeJour(10, moi, conn);
+            w.tourDeJour(15, moi, conn);
         } catch (Exception e) {
             System.err.println("Erreur pendant la simulation : " + e.getMessage());
             e.printStackTrace();
