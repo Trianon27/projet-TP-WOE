@@ -6,23 +6,23 @@ import java.sql.SQLException;
 import java.util.Random;
 
 /**
- * Classe représentant une Nourriture pouvant être utilisée par un Personnage.
+ * Classe representant une Nourriture pouvant être utilisee par un Personnage.
  * <p>
  * Elle applique un effet temporaire (bonus/malus) sur certaines
- * caractéristiques du personnage pendant un certain nombre de tours.
+ * caracteristiques du personnage pendant un certain nombre de tours.
  * </p>
  *
  * <p>
- * Chaque type de nourriture a un effet et une durée différente :
+ * Chaque type de nourriture a un effet et une duree differente :
  * <ul>
- *   <li>🍺 ALCOHOOL — réduit l’attaque, augmente la parade</li>
- *   <li>🥦 LEGUMBRE — augmente attaque + parade</li>
- *   <li>🥤 BOISSONRICHE — augmente la distance d’attaque mais diminue la parade</li>
- *   <li>🍎 POMMEDOR — augmente fortement attaque + parade</li>
+ *   <li>ALCOHOOL — reduit l’attaque, augmente la parade</li>
+ *   <li>LEGUMBRE — augmente attaque + parade</li>
+ *   <li>BOISSONRICHE — augmente la distance d’attaque mais diminue la parade</li>
+ *   <li>POMMEDOR — augmente fortement attaque + parade</li>
  * </ul>
  * </p>
  *
- * <p>La classe gère aussi la persistance en base de données via {@link #saveToDB(Connection, int)}.</p>
+ * <p>La classe gère aussi la persistance en base de donnees via {@link #saveToDB(Connection, int)}.</p>
  *
  * @author
  * @version 3.0 (fusion complète)
@@ -31,7 +31,7 @@ public class Nourriture extends Objet implements ObjetUtilisable {
 
     // ================= ATTRIBUTS =================
 
-    /** Durée restante de l'effet en tours. */
+    /** Duree restante de l'effet en tours. */
     private int coolDown;
 
     /** Type de nourriture. */
@@ -46,7 +46,7 @@ public class Nourriture extends Objet implements ObjetUtilisable {
 
     // ================= CONSTRUCTEURS =================
 
-    /** Constructeur simple avec génération automatique de durée aléatoire. */
+    /** Constructeur simple avec generation automatique de duree aleatoire. */
     public Nourriture(Nourritures typeNourriture) {
         super();
         this.typeNourriture = typeNourriture;
@@ -67,14 +67,14 @@ public class Nourriture extends Objet implements ObjetUtilisable {
         this.coolDown = genererCoolDownAleatoire(typeNourriture);
     }
 
-    /** Constructeur direct avec cooldown défini (utile pour chargement BDD). */
+    /** Constructeur direct avec cooldown defini (utile pour chargement BDD). */
     public Nourriture(int coolDown, Nourritures typeNourriture, String nom, String description, Point2D position) {
         super(nom, description, position);
         this.typeNourriture = typeNourriture;
         this.coolDown = coolDown;
     }
 
-    // ================= GÉNÉRATION ALÉATOIRE =================
+    // ================= GeNeRATION ALeATOIRE =================
 
     private int genererCoolDownAleatoire(Nourritures type) {
         Random r = new Random();
@@ -124,7 +124,7 @@ public class Nourriture extends Objet implements ObjetUtilisable {
         this.pos = pos;
     }
 
-    // ================= MÉCANIQUE D’EFFET =================
+    // ================= MeCANIQUE D’EFFET =================
 
     @Override
     public void appliquerEffet(Personnage p) {
@@ -167,7 +167,7 @@ public class Nourriture extends Objet implements ObjetUtilisable {
             }
         }
 
-        // 🔒 Clamp entre 0 et 100
+        // Clamp entre 0 et 100
         p.setPageAtt(Math.max(0, Math.min(100, p.getPageAtt())));
         p.setPagePar(Math.max(0, Math.min(100, p.getPagePar())));
     }
@@ -185,7 +185,7 @@ public class Nourriture extends Objet implements ObjetUtilisable {
     // ================= SAUVEGARDE EN BASE =================
 
     /**
-     * Sauvegarde la nourriture dans la base de données, liée à une partie.
+     * Sauvegarde la nourriture dans la base de donnees, liee à une partie.
      * 
      * @param conn connexion JDBC ouverte
      * @param idPartie identifiant de la partie
@@ -203,7 +203,7 @@ public class Nourriture extends Objet implements ObjetUtilisable {
             ps.setInt(4, this.getPos().getY());
             ps.setInt(5, idPartie);
             ps.executeUpdate();
-            System.out.println("✅ Nourriture insérée en base : " + this.getNom());
+            System.out.println("Nourriture inseree en base : " + this.getNom());
         } catch (SQLException e) {
             System.err.println("Erreur Nourriture.saveToDB : " + e.getMessage());
         }
