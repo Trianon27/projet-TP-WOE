@@ -60,12 +60,6 @@ public class TestWoE {
         // ======================================================
         // 4️⃣ Sauvegarde complète du monde et du joueur
         // ======================================================
-        try {
-            w.saveWorldToDB(conn, moi);
-        } catch (Exception e) {
-            System.err.println("Erreur lors de la sauvegarde SQL : " + e.getMessage());
-            e.printStackTrace();
-        }
 
         // ======================================================
         // 5️⃣ Fermeture propre de la connexion
