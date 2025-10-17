@@ -89,7 +89,7 @@ public class World {
         Joueur moi = new Joueur();
         Scanner sc = new Scanner(System.in);
         String nom;
-        int choix;
+        int choix = -1;
 
         boolean valide;
         do {
@@ -98,41 +98,53 @@ public class World {
             System.out.println("1 - Guerrier");
             System.out.println("2 - Archer");
             System.out.println("3 - Aleatoire");
-            choix = sc.nextInt();
+
+            // 🔹 Lecture sécurisée de l'entrée utilisateur
+            try {
+                System.out.print("> Votre choix : ");
+                choix = sc.nextInt();
+            } catch (InputMismatchException e) {
+                System.out.println("⚠️ Veuillez entrer un nombre valide (1, 2 ou 3).");
+                sc.nextLine(); // vide le buffer d’entrée
+                valide = false;
+                continue;
+            }
+
+            // 🔹 Vérification de la plage de valeurs
+            if (choix < 1 || choix > 3) {
+                System.out.println("⚠️ Choix invalide ! Veuillez entrer 1, 2 ou 3.");
+                valide = false;
+                continue;
+            }
 
             if (choix == 3) {
                 choix = rand.nextInt(2) + 1;
             }
 
             System.out.print("Nom du personnage : ");
-            nom = sc.next();
+            sc.nextLine(); // consomme la fin de ligne après le chiffre
+            nom = sc.nextLine();
 
+            Point2D p = positionAleatoire(rand);
             switch (choix) {
-                case 1 -> {
-                    Point2D p = positionAleatoire(rand);
-                    moi.hero = new Guerrier(nom, true,
-                            rand.nextInt(101) + 50, rand.nextInt(21) + 10,
-                            rand.nextInt(21) + 5, rand.nextInt(51) + 50,
-                            rand.nextInt(51) + 30, p, 1, 5);
-                }
-                case 2 -> {
-                    Point2D p = positionAleatoire(rand);
-                    moi.hero = new Archer(nom, true,
-                            rand.nextInt(21) + 80, rand.nextInt(11) + 5,
-                            rand.nextInt(11) + 5, rand.nextInt(51) + 50,
-                            rand.nextInt(51) + 30, p, 2, 6, rand.nextInt(11) + 5);
-                }
-                default -> {
-                    System.out.println("Choix invalide !");
-                    valide = false;
-                }
+                case 1 -> moi.hero = new Guerrier(nom, true,
+                        rand.nextInt(101) + 50, rand.nextInt(21) + 10,
+                        rand.nextInt(21) + 5, rand.nextInt(51) + 50,
+                        rand.nextInt(51) + 30, p, 1, 5);
+
+                case 2 -> moi.hero = new Archer(nom, true,
+                        rand.nextInt(21) + 80, rand.nextInt(11) + 5,
+                        rand.nextInt(11) + 5, rand.nextInt(51) + 50,
+                        rand.nextInt(51) + 30, p, 2, 6, rand.nextInt(11) + 5);
             }
+
         } while (!valide);
 
         moi.hero.affiche();
         this.ListCreature.add(moi.hero);
         return moi;
     }
+
 
     // ====================== GeNeRATION DU MONDE ======================
     public void creerMondeAlea() {
@@ -364,7 +376,7 @@ public class World {
     public int saveWorldToDB(Connection conn, Joueur joueur, String nomPartie, int tourActuel, int toursRestants) {
         int idPartie = -1;
         try {
-            // 1) Créer la partie avec les infos de progression
+            // 1️⃣ Créer la partie avec les infos de progression
             String sqlPartie = """
                 INSERT INTO Partie (nom_partie, id_joueur, tour_actuel, tours_restants, date_sauvegarde)
                 VALUES (?, NULL, ?, ?, CURRENT_TIMESTAMP)
@@ -377,14 +389,14 @@ public class World {
                 var rs = psPartie.executeQuery();
                 rs.next();
                 idPartie = rs.getInt("id_partie");
-                this.currentPartieId = idPartie; // ✅ mémorise pour les updates suivants
+                this.currentPartieId = idPartie; // ✅ Mémoriser pour mises à jour suivantes
             }
             System.out.println("✅ Partie créée (id_partie = " + idPartie + ", nom = '" + nomPartie + "')");
 
-            // 2) Perso du joueur
+            // 2️⃣ Sauvegarder le personnage du joueur
             joueur.hero.saveToDB(conn, idPartie);
 
-            // 3) Joueur lié au personnage
+            // 3️⃣ Créer le joueur lié au personnage
             int idJoueur;
             try (PreparedStatement psJoueur = conn.prepareStatement("""
                 INSERT INTO Joueur (id_personnage)
@@ -396,6 +408,7 @@ public class World {
                 rsJ.next();
                 idJoueur = rsJ.getInt("id_joueur");
             }
+
             try (PreparedStatement psMaj = conn.prepareStatement(
                     "UPDATE Partie SET id_joueur = ? WHERE id_partie = ?"
             )) {
@@ -404,7 +417,7 @@ public class World {
                 psMaj.executeUpdate();
             }
 
-            // 4) Inventaire (créer l'inventaire)
+            // 4️⃣ Créer l’inventaire du joueur
             int idInventaire;
             try (PreparedStatement psInv = conn.prepareStatement(
                     "INSERT INTO Inventaire (id_joueur) VALUES (?) RETURNING id_inventaire"
@@ -415,7 +428,7 @@ public class World {
                 idInventaire = rsI.getInt("id_inventaire");
             }
 
-            // 5) Objets du monde
+            // 5️⃣ Sauvegarder les objets du monde
             for (Objet o : this.ListObjets) {
                 if (o instanceof Epee e) {
                     e.saveToDB(conn, idPartie);
@@ -428,12 +441,13 @@ public class World {
                 }
             }
 
-            // 6) Contenu inventaire du héros
-            try (PreparedStatement psCont = conn.prepareStatement("""
-                INSERT INTO Contenu_Inventaire (id_inventaire, id_nourriture, quantite)
-                VALUES (?, ?, 1)
-            """)) {
-                for (Objet o : joueur.hero.getInventaire()) {
+            // 6️⃣ Sauvegarde complète du contenu de l’inventaire du héros
+            List<Objet> inventaire = joueur.hero.getInventaire();
+            if (inventaire.isEmpty()) {
+                System.out.println("🧺 Inventaire vide — aucun objet à sauvegarder.");
+            } else {
+                System.out.println("🧺 Sauvegarde de " + inventaire.size() + " objet(s) dans l’inventaire...");
+                for (Objet o : inventaire) {
                     if (o instanceof Nourriture n) {
                         n.saveToDB(conn, idPartie);
                         try (PreparedStatement psGet = conn.prepareStatement("""
@@ -443,21 +457,75 @@ public class World {
                         """)) {
                             psGet.setString(1, n.getNom());
                             psGet.setInt(2, idPartie);
-                            var rsN = psGet.executeQuery();
-                            if (rsN.next()) {
-                                psCont.setInt(1, idInventaire);
-                                psCont.setInt(2, rsN.getInt("id_nourriture"));
-                                psCont.addBatch();
+                            var rs = psGet.executeQuery();
+                            if (rs.next()) {
+                                try (PreparedStatement psCont = conn.prepareStatement("""
+                                    INSERT INTO Contenu_Inventaire (id_inventaire, id_nourriture, quantite)
+                                    VALUES (?, ?, 1)
+                                """)) {
+                                    psCont.setInt(1, idInventaire);
+                                    psCont.setInt(2, rs.getInt("id_nourriture"));
+                                    psCont.executeUpdate();
+                                }
                             }
                         }
+                    } else if (o instanceof PotionSoin p) {
+                        p.saveToDB(conn, idPartie);
+                        try (PreparedStatement psGet = conn.prepareStatement("""
+                            SELECT id_potion FROM PotionSoin
+                            WHERE nom = ? AND id_partie = ?
+                            ORDER BY id_potion DESC LIMIT 1
+                        """)) {
+                            psGet.setString(1, p.getNom());
+                            psGet.setInt(2, idPartie);
+                            var rs = psGet.executeQuery();
+                            if (rs.next()) {
+                                try (PreparedStatement psCont = conn.prepareStatement("""
+                                    INSERT INTO Contenu_Inventaire (id_inventaire, id_nourriture, quantite)
+                                    VALUES (?, ?, 1)
+                                """)) {
+                                    psCont.setInt(1, idInventaire);
+                                    psCont.setInt(2, rs.getInt("id_potion"));
+                                    psCont.executeUpdate();
+                                }
+                            }
+                        }
+                    } else if (o instanceof Epee e) {
+                        e.saveToDB(conn, idPartie);
+                        try (PreparedStatement psGet = conn.prepareStatement("""
+                            SELECT id_epee FROM Epee
+                            WHERE nom = ? AND id_partie = ?
+                            ORDER BY id_epee DESC LIMIT 1
+                        """)) {
+                            psGet.setString(1, e.getNom());
+                            psGet.setInt(2, idPartie);
+                            var rs = psGet.executeQuery();
+                            if (rs.next()) {
+                                try (PreparedStatement psCont = conn.prepareStatement("""
+                                    INSERT INTO Contenu_Inventaire (id_inventaire, id_nourriture, quantite)
+                                    VALUES (?, ?, 1)
+                                """)) {
+                                    psCont.setInt(1, idInventaire);
+                                    psCont.setInt(2, rs.getInt("id_epee"));
+                                    psCont.executeUpdate();
+                                }
+                            }
+                        }
+                    } else {
+                        System.out.println("⚠️ Type d’objet non géré : " + o.getClass().getSimpleName());
                     }
                 }
-                psCont.executeBatch();
             }
 
-            // 7) Créatures
+            // 7️⃣ Sauvegarder toutes les créatures (PNJ et monstres)
             for (Creature c : this.ListCreature) {
-                if (c instanceof Loup l) {
+                if (c instanceof Guerrier g) {
+                    g.saveToDB(conn, idPartie);
+                } else if (c instanceof Archer a) {
+                    a.saveToDB(conn, idPartie);
+                } else if (c instanceof Paysan p) {
+                    p.saveToDB(conn, idPartie);
+                } else if (c instanceof Loup l) {
                     l.saveToDB(conn, idPartie);
                 } else if (c instanceof Lapin la) {
                     la.saveToDB(conn, idPartie);
@@ -473,5 +541,204 @@ public class World {
             return -1;
         }
     }
+
+    /**
+     * Recharge le monde complet depuis la base PostgreSQL
+     * pour une partie donnée (idPartie).
+     *
+     * Cette méthode restaure :
+     *  - Tous les personnages (Guerrier, Archer, Paysan)
+     *  - Tous les monstres (Loup, Lapin)
+     *  - Tous les objets (Potion, Épée, Nourriture, NuageToxique)
+     *
+     * @param conn connexion PostgreSQL active
+     * @param idPartie identifiant de la partie à restaurer
+     */
+    public void loadWorldFromDB(Connection conn, int idPartie) {
+        this.ListCreature.clear();
+        this.ListObjets.clear();
+        this.ListAnalyze.clear();
+        this.positionsOccupees.clear();
+
+        try {
+            System.out.println("\n? Chargement du monde depuis la base...");
+
+            // === 1️⃣ GUERRIERS ===
+            try (PreparedStatement ps = conn.prepareStatement("""
+                SELECT g.id_guerrier, p.*
+                FROM Guerrier g
+                JOIN Personnage p ON g.id_personnage = p.id_personnage
+                WHERE p.id_partie = ?
+            """)) {
+                ps.setInt(1, idPartie);
+                var rs = ps.executeQuery();
+                while (rs.next()) {
+                    Point2D pos = new Point2D(rs.getInt("posX"), rs.getInt("posY"));
+                    Guerrier g = new Guerrier(
+                            rs.getString("nom"), true,
+                            rs.getInt("ptVie"), rs.getInt("degAtt"), rs.getInt("ptPar"),
+                            rs.getInt("pourcentageAtt"), rs.getInt("pourcentagePar"),
+                            pos,
+                            rs.getInt("distAttMax"), rs.getInt("distVue")
+                    );
+                    ListCreature.add(g);
+                    positionsOccupees.add(pos);
+                }
+            }
+
+            // === 2️⃣ ARCHERS ===
+            try (PreparedStatement ps = conn.prepareStatement("""
+                SELECT a.id_archer, p.*, a.nbFleches
+                FROM Archer a
+                JOIN Personnage p ON a.id_personnage = p.id_personnage
+                WHERE p.id_partie = ?
+            """)) {
+                ps.setInt(1, idPartie);
+                var rs = ps.executeQuery();
+                while (rs.next()) {
+                    Point2D pos = new Point2D(rs.getInt("posX"), rs.getInt("posY"));
+                    Archer a = new Archer(
+                            rs.getString("nom"), true,
+                            rs.getInt("ptVie"), rs.getInt("degAtt"), rs.getInt("ptPar"),
+                            rs.getInt("pourcentageAtt"), rs.getInt("pourcentagePar"),
+                            pos,
+                            rs.getInt("distAttMax"), rs.getInt("distVue"),
+                            rs.getInt("nbFleches")
+                    );
+                    ListCreature.add(a);
+                    positionsOccupees.add(pos);
+                }
+            }
+
+            // === 3️⃣ PAYSANS ===
+            try (PreparedStatement ps = conn.prepareStatement("""
+                SELECT y.id_paysan, p.*
+                FROM Paysan y
+                JOIN Personnage p ON y.id_personnage = p.id_personnage
+                WHERE p.id_partie = ?
+            """)) {
+                ps.setInt(1, idPartie);
+                var rs = ps.executeQuery();
+                while (rs.next()) {
+                    Point2D pos = new Point2D(rs.getInt("posX"), rs.getInt("posY"));
+                    Paysan pa = new Paysan(
+                            rs.getString("nom"), true,
+                            rs.getInt("ptVie"), rs.getInt("degAtt"), rs.getInt("ptPar"),
+                            rs.getInt("pourcentageAtt"), rs.getInt("pourcentagePar"),
+                            rs.getInt("distAttMax"),
+                            pos,
+                            rs.getInt("distVue")
+                    );
+                    ListCreature.add(pa);
+                    positionsOccupees.add(pos);
+                }
+            }
+
+            // === 4️⃣ LOUPS ===
+            try (PreparedStatement ps = conn.prepareStatement("SELECT * FROM Loup WHERE id_partie = ?")) {
+                ps.setInt(1, idPartie);
+                var rs = ps.executeQuery();
+                while (rs.next()) {
+                    Loup l = new Loup(
+                            rs.getString("nom"), true,
+                            rs.getInt("ptVie"), rs.getInt("degAtt"), rs.getInt("ptPar"),
+                            rs.getInt("pourcentageAtt"), rs.getInt("pourcentagePar"),
+                            new Point2D(rs.getInt("posX"), rs.getInt("posY")),
+                            rs.getInt("distAttMax"), rs.getInt("distVue"),
+                            Monstre.Dangerosite.valueOf(rs.getString("dangerosite").toUpperCase())
+                    );
+                    ListCreature.add(l);
+                    positionsOccupees.add(l.getPos());
+                }
+            }
+
+            // === 5️⃣ LAPINS ===
+            try (PreparedStatement ps = conn.prepareStatement("SELECT * FROM Lapin WHERE id_partie = ?")) {
+                ps.setInt(1, idPartie);
+                var rs = ps.executeQuery();
+                while (rs.next()) {
+                    Lapin la = new Lapin(
+                            rs.getString("nom"), true,
+                            rs.getInt("ptVie"), rs.getInt("degAtt"), rs.getInt("ptPar"),
+                            rs.getInt("pourcentageAtt"), rs.getInt("pourcentagePar"),
+                            new Point2D(rs.getInt("posX"), rs.getInt("posY")),
+                            rs.getInt("distAttMax"), rs.getInt("distVue"),
+                            Monstre.Dangerosite.DOCILE
+                    );
+                    ListCreature.add(la);
+                    positionsOccupees.add(la.getPos());
+                }
+            }
+
+            // === 6️⃣ POTIONS ===
+            try (PreparedStatement ps = conn.prepareStatement("SELECT * FROM PotionSoin WHERE id_partie = ?")) {
+                ps.setInt(1, idPartie);
+                var rs = ps.executeQuery();
+                while (rs.next()) {
+                    PotionSoin p = new PotionSoin(
+                            rs.getString("nom"), rs.getString("description"),
+                            new Point2D(rs.getInt("posX"), rs.getInt("posY")), rs.getInt("valeur"));
+                    ListObjets.add(p);
+                    positionsOccupees.add(p.getPosition());
+                }
+            }
+
+            // === 7️⃣ ÉPÉES ===
+            try (PreparedStatement ps = conn.prepareStatement("SELECT * FROM Epee WHERE id_partie = ?")) {
+                ps.setInt(1, idPartie);
+                var rs = ps.executeQuery();
+                while (rs.next()) {
+                    Epee e = new Epee(
+                            rs.getString("nom"), rs.getString("description"),
+                            new Point2D(rs.getInt("posX"), rs.getInt("posY")), 15, Epee.Etat.NONE);
+                    ListObjets.add(e);
+                    positionsOccupees.add(e.getPosition());
+                }
+            }
+
+            // === 8️⃣ NOURRITURES ===
+            try (PreparedStatement ps = conn.prepareStatement("SELECT * FROM Nourriture WHERE id_partie = ?")) {
+                ps.setInt(1, idPartie);
+                var rs = ps.executeQuery();
+                while (rs.next()) {
+                    Nourriture n = new Nourriture(
+                            Nourriture.Nourritures.LEGUMBRE, // tu peux adapter selon ton champ SQL
+                            rs.getString("nom"), rs.getString("description"),
+                            new Point2D(rs.getInt("posX"), rs.getInt("posY"))
+                    );
+                    ListObjets.add(n);
+                    positionsOccupees.add(n.getPosition());
+                }
+            }
+
+            // === 9️⃣ NUAGES TOXIQUES ===
+            try (PreparedStatement ps = conn.prepareStatement("SELECT * FROM NuageToxique WHERE id_partie = ?")) {
+                ps.setInt(1, idPartie);
+                var rs = ps.executeQuery();
+                while (rs.next()) {
+                    NuageToxique n = new NuageToxique(
+                            rs.getString("nom"), rs.getString("description"),
+                            new Point2D(rs.getInt("posX"), rs.getInt("posY")),
+                            rs.getInt("degAtt"), rs.getInt("duree"), rs.getInt("tailleZone"));
+                    ListObjets.add(n);
+                    positionsOccupees.add(n.getPosition());
+                }
+            }
+
+            // === 🔟 Finalisation
+            this.currentPartieId = idPartie;
+            this.ListElementJeu.clear();
+            this.ListElementJeu.addAll(ListCreature);
+            this.ListElementJeu.addAll(ListObjets);
+
+            System.out.println("? Monde restauré depuis la base pour la partie " + idPartie);
+            System.out.println("✅ " + ListCreature.size() + " créatures et " + ListObjets.size() + " objets rechargés.");
+
+        } catch (Exception e) {
+            System.err.println("❌ Erreur loadWorldFromDB : " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
 
 }
