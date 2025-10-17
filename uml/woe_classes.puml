@@ -1,7 +1,7 @@
 ﻿@startuml
 ' --- Taille et qualitÃ© ---
-scale max 4096 width
-skinparam dpi 300
+scale max 5000 width
+skinparam dpi 50
 
 ' --- Style gÃ©nÃ©ral ---
 skinparam backgroundColor #f8f8f8
