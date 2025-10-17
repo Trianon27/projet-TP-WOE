@@ -27,13 +27,19 @@ import java.util.*;
 public class Joueur implements Analyze {
 
     // ===================== ATTRIBUTS =====================
-    /** Personnage contrôle par le joueur. */
+    /**
+     * Personnage contrôle par le joueur.
+     */
     public Personnage hero;
 
-    /** Nom du joueur (pseudo). */
+    /**
+     * Nom du joueur (pseudo).
+     */
     private String nomJoueur;
 
-    /** Indique si une action a ete effectuee ce tour. */
+    /**
+     * Indique si une action a ete effectuee ce tour.
+     */
     private boolean actionEffectuee;
 
     // ===================== CONSTRUCTEURS =====================
@@ -62,92 +68,139 @@ public class Joueur implements Analyze {
     public void setHero(Personnage hero) {
         this.hero = hero;
     }
+
     /**
-     * Implementation minimale requise par l'interface Analyze.
-     * Cette version est utilisee par le moteur IA (non connectee à la base).
-     * Ici, on appelle simplement la version complète avec les mêmes paramètres,
-     * mais sans connexion.
+     * Implementation minimale requise par l'interface Analyze. Cette version
+     * est utilisee par le moteur IA (non connectee à la base). Ici, on appelle
+     * simplement la version complète avec les mêmes paramètres, mais sans
+     * connexion.
      */
     @Override
     public void analyzer(Set<Point2D> positionWorld, List<Creature> creatures,
-                         List<Objet> objets, int tailleMonde) {
+            List<Objet> objets, int tailleMonde) {
         // Par defaut : simple appel vers la version enrichie sans sauvegarde.
         // (utile quand le monde tourne sans base de donnees)
         analyzer(positionWorld, creatures, objets, null, null);
     }
 
     /**
-    * Variante de analyzer pour le mode connecte à la base.
-    * Appelee par World.tourDeJour(..., Connection).
-    */
+     * Variante de analyzer pour le mode connecte à la base. Appelee par
+     * World.tourDeJour(..., Connection).
+     */
     public void analyzer(Set<Point2D> positionWorld, List<Creature> creatures,
-                         List<Objet> objets, World world, Connection conn) {
+            List<Objet> objets, World world, Connection conn) {
 
-        // Appelle la version complète avec sauvegarde
         Scanner sc = new Scanner(System.in);
         Point2D posHero = this.hero.getPos();
 
         do {
             actionEffectuee = false;
-            System.out.println("\n=== ACTIONS DISPONIBLES ===");
-            System.out.println("0 - Sauvegarder la partie");
-            System.out.println("1 - Se deplacer");
-            System.out.println("2 - Attaquer");
-            System.out.println("3 - Interagir avec un objet");
-            System.out.println("4 - Utiliser un objet de l'inventaire");
-            System.out.println("5 - Ne rien faire");
-            System.out.print("Choix : ");
+            System.out.println("\nActuellement, vous pouvez :");
 
-            int choix = sc.nextInt();
-            switch (choix) {
-                case 0 -> {
-                    sc.nextLine(); // ⚠️ pour consommer le retour ligne de nextInt()
-                    System.out.print("💾 Entrez un nom pour votre partie : ");
-                    String nomPartie = sc.nextLine();
+            List<String> options = new ArrayList<>();
+            List<Runnable> actions = new ArrayList<>();
 
-                    if (nomPartie.trim().isEmpty()) {
-                        nomPartie = "Partie_sans_nom_" + System.currentTimeMillis();
-                    }
-
-                    int tourActuel = world.getCurrentTurn();
-                    int toursRestants = world.getRemainingTurns();
-
-                    System.out.println("\n💾 Sauvegarde de la partie '" + nomPartie + "' en cours...");
-                    int idPartie = world.saveWorldToDB(conn, this, nomPartie, tourActuel, toursRestants);
-
-                    if (idPartie != -1) {
-                        // ✅ on utilise le setter au lieu d'accéder directement à l'attribut privé
-                        world.setCurrentPartieId(idPartie);
-
-                        System.out.println("""
-                            ✅ Partie sauvegardée avec succès !
-                            🆔 ID de la partie : """ + idPartie + """
-
-                            💡 Conservez cet identifiant précieusement.
-                            Il vous sera nécessaire pour restaurer votre partie plus tard.
-                        """);
-                    } else {
-                        System.out.println("❌ Erreur : la sauvegarde n’a pas pu être réalisée.");
-                    }
-
-                    actionEffectuee = false; // reste dans le menu après sauvegarde
+            // 0️⃣ Sauvegarder la partie (toujours disponible)
+            options.add("Sauvegarder la partie");
+            actions.add(() -> {
+                sc.nextLine(); // consommer le retour ligne
+                System.out.print("💾 Entrez un nom pour votre partie : ");
+                String nomPartie = sc.nextLine();
+                if (nomPartie.trim().isEmpty()) {
+                    nomPartie = "Partie_sans_nom_" + System.currentTimeMillis();
                 }
-                case 1 -> deplacerController(creatures, world.TAILLE_MONDE);
-                case 2 -> attaquerController(creatures, positionWorld);
-                case 3 -> interactionController(objets, positionWorld);
-                case 4 -> utiliserObjetController();
-                case 5 -> {
-                    System.out.println("Vous choisissez de ne rien faire.");
-                    actionEffectuee = true;
+
+                int tourActuel = world.getCurrentTurn();
+                int toursRestants = world.getRemainingTurns();
+
+                System.out.println("\n💾 Sauvegarde de la partie '" + nomPartie + "' en cours...");
+                int idPartie = world.saveWorldToDB(conn, this, nomPartie, tourActuel, toursRestants);
+
+                if (idPartie != -1) {
+                    world.setCurrentPartieId(idPartie);
+
+                    System.out.println("""
+                    ✅ Partie sauvegardée avec succès !
+                    🆔 ID de la partie : """ + idPartie + """
+
+                    💡 Conservez cet identifiant précieusement.
+                    Il vous sera nécessaire pour restaurer votre partie plus tard.
+                """);
+                } else {
+                    System.out.println("❌ Erreur : la sauvegarde n’a pas pu être réalisée.");
                 }
-                default -> System.out.println("Option invalide !");
+
+                actionEffectuee = false; // reste dans le menu après sauvegarde
+            });
+
+            // 1️⃣ Déplacement
+            options.add("Se déplacer");
+            actions.add(() -> deplacerController(creatures, world.TAILLE_MONDE));
+
+            // 2️⃣ Attaque (si cibles proches)
+            List<Creature> ciblesAdjacentes = new ArrayList<>();
+            for (Creature c : creatures) {
+                double dx = Math.abs(c.getPos().getX() - posHero.getX());
+                double dy = Math.abs(c.getPos().getY() - posHero.getY());
+                if (dx <= this.hero.getDistAttMax() && dy <= this.hero.getDistAttMax() && !(dx == 0 && dy == 0)) {
+                    ciblesAdjacentes.add(c);
+                }
+            }
+            if (!ciblesAdjacentes.isEmpty()) {
+                options.add("Attaquer");
+                actions.add(() -> attaqueController(ciblesAdjacentes, positionWorld, creatures));
+            }
+
+            // 3️⃣ Interaction avec un objet présent
+            for (Objet o : objets) {
+                if (o.getPosition().equals(posHero)) {
+                    options.add("Interagir avec un objet");
+                    actions.add(() -> interactionController(o, positionWorld, objets));
+                    break;
+                }
+            }
+
+            // 4️⃣ Utiliser un objet de l’inventaire
+            if (!hero.getInventaire().isEmpty()) {
+                options.add("Utiliser un objet de l'inventaire");
+                actions.add(this::utiliserObjetController);
+            }
+
+            // 5️⃣ Ne rien faire
+            options.add("Ne rien faire");
+            actions.add(() -> {
+                System.out.println("Vous avez décidé de ne rien faire ce tour.");
+                actionEffectuee = true;
+            });
+
+            // Afficher les options dynamiques
+            for (int i = 0; i < options.size(); i++) {
+                System.out.println(i + " - " + options.get(i));
+            }
+
+            System.out.print("Sélectionnez une option : ");
+            int choix;
+            try {
+                choix = sc.nextInt();
+            } catch (InputMismatchException e) {
+                System.out.println("⚠️ Entrée invalide ! Veuillez entrer un nombre.");
+                sc.nextLine();
+                continue;
+            }
+
+            if (choix >= 0 && choix < actions.size()) {
+                actions.get(choix).run();
+            } else {
+                System.out.println("Option invalide.");
             }
 
         } while (!actionEffectuee);
     }
 
     // ===================== CONTRÔLEURS =====================
-    /** Deplacement avec diagonales et verification des collisions */
+    /**
+     * Deplacement avec diagonales et verification des collisions
+     */
     public void deplacerController(List<Creature> creatures, int tailleMonde) {
         Scanner sc = new Scanner(System.in);
         boolean choixValide;
@@ -168,14 +221,30 @@ public class Joueur implements Analyze {
                     actionEffectuee = false;
                     return;
                 }
-                case 1 -> dy = -1;
-                case 2 -> dy = 1;
-                case 3 -> dx = -1;
-                case 4 -> dx = 1;
-                case 5 -> { dx = -1; dy = -1; }
-                case 6 -> { dx = 1; dy = -1; }
-                case 7 -> { dx = -1; dy = 1; }
-                case 8 -> { dx = 1; dy = 1; }
+                case 1 ->
+                    dy = -1;
+                case 2 ->
+                    dy = 1;
+                case 3 ->
+                    dx = -1;
+                case 4 ->
+                    dx = 1;
+                case 5 -> {
+                    dx = -1;
+                    dy = -1;
+                }
+                case 6 -> {
+                    dx = 1;
+                    dy = -1;
+                }
+                case 7 -> {
+                    dx = -1;
+                    dy = 1;
+                }
+                case 8 -> {
+                    dx = 1;
+                    dy = 1;
+                }
                 default -> {
                     System.out.println("Choix invalide !");
                     choixValide = false;
@@ -205,78 +274,99 @@ public class Joueur implements Analyze {
         } while (!choixValide);
     }
 
-    /** Attaque les creatures à portee */
-    public void attaquerController(List<Creature> creatures, Set<Point2D> positionWorld) {
+    /**
+     * Attaque les creatures à portee
+     */
+    public void attaqueController(List<Creature> ciblesAdjacentes, Set<Point2D> positionWorld, List<Creature> creatures) {
         Scanner sc = new Scanner(System.in);
-        List<Creature> cibles = new ArrayList<>();
+        boolean choixValide;
 
-        for (Creature c : creatures) {
-            double dx = Math.abs(c.getPos().getX() - hero.getPos().getX());
-            double dy = Math.abs(c.getPos().getY() - hero.getPos().getY());
-            if (dx <= hero.getDistAttMax() && dy <= hero.getDistAttMax() && !(dx == 0 && dy == 0)) {
-                cibles.add(c);
+        do {
+            choixValide = true;
+            System.out.println("Vous pouvez attaquer l'une des créatures adjacentes :");
+            for (int i = 0; i < ciblesAdjacentes.size(); i++) {
+                Creature c = ciblesAdjacentes.get(i);
+                System.out.println((i + 1) + " - " + c.getNom() + " (" + c.getPtVie() + " PV)");
             }
-        }
 
-        if (cibles.isEmpty()) {
-            System.out.println("Aucune cible à proximite !");
-            return;
-        }
+            int optionNeRienFaire = ciblesAdjacentes.size() + 1;
+            int optionRetour = ciblesAdjacentes.size() + 2;
 
-        System.out.println("Cibles à portee :");
-        for (int i = 0; i < cibles.size(); i++)
-            System.out.println((i + 1) + " - " + cibles.get(i).getNom() + " (" + cibles.get(i).getPtVie() + " PV)");
-        System.out.println("0 - Retour");
+            System.out.println(optionNeRienFaire + " - Ne rien faire");
+            System.out.println(optionRetour + " - Retour");
+            System.out.println("Sélectionnez une option :");
+            int choix = sc.nextInt();
 
-        int choix = sc.nextInt();
-        if (choix > 0 && choix <= cibles.size() && hero instanceof Combattant combattant) {
-            combattant.combattre(cibles.get(choix - 1), positionWorld, creatures);
-            actionEffectuee = true;
-        }
-    }
-
-    /** Interagit avec un objet sur la case actuelle */
-    public void interactionController(List<Objet> objets, Set<Point2D> positionWorld) {
-        Scanner sc = new Scanner(System.in);
-        Objet cible = objets.stream()
-                .filter(o -> o.getPosition().equals(hero.getPos()))
-                .findFirst()
-                .orElse(null);
-
-        if (cible == null) {
-            System.out.println("Aucun objet ici.");
-            return;
-        }
-
-        System.out.println("Objet trouve : " + cible.getNom());
-        System.out.println("1 - Utiliser immediatement");
-        System.out.println("2 - Ajouter à l'inventaire");
-        System.out.println("0 - Retour");
-
-        int choix = sc.nextInt();
-        switch (choix) {
-            case 1 -> {
-                hero.prendObjet(cible, positionWorld);
-                objets.remove(cible);
-                actionEffectuee = true;
-            }
-            case 2 -> {
-                if (cible instanceof ObjetUtilisable) {
-                    hero.getInventaire().add(cible);
-                    positionWorld.remove(cible.getPosition());
-                    objets.remove(cible);
-                    System.out.println("" + cible.getNom() + " ajoute à l’inventaire !");
+            if (choix > 0 && choix <= ciblesAdjacentes.size()) {
+                Creature cible = ciblesAdjacentes.get(choix - 1);
+                if (hero instanceof Combattant combattant) {
+                    combattant.combattre(cible, positionWorld, creatures);
                     actionEffectuee = true;
                 } else {
-                    System.out.println("Cet objet ne peut pas être stocke !");
+                    System.out.println(hero.getNom() + " ne peut pas attaquer !");
                 }
+            } else if (choix == optionNeRienFaire) {
+                System.out.println("Vous décidez de ne rien faire.");
+                actionEffectuee = true;
+            } else if (choix == optionRetour) {
+                System.out.println("Retour au menu principal...");
+                actionEffectuee = false;
+            } else {
+                System.out.println("Option invalide !");
+                choixValide = false;
             }
-            case 0 -> System.out.println("Retour au menu principal...");
-            default -> System.out.println("Option invalide !");
-        }
+
+        } while (!choixValide);
     }
 
-    /** Permet d’utiliser un objet de l’inventaire */
+    /**
+     * Interagit avec un objet sur la case actuelle
+     */
+    public void interactionController(Objet o, Set<Point2D> positionWorld, List<Objet> objets) {
+        Scanner sc = new Scanner(System.in);
+        boolean choixValide = false;
+
+        do {
+            System.out.println("Vous avez trouvé : " + o.getNom());
+            System.out.println("1 - Utiliser immédiatement");
+            System.out.println("2 - Ajouter à l'inventaire");
+            System.out.println("0 - Retour");
+
+            int choix = sc.nextInt();
+
+            switch (choix) {
+                case 1 -> {
+                    this.hero.prendObjet(o, positionWorld);
+                    objets.remove(o);
+                    actionEffectuee = true;
+                    choixValide = true;
+                }
+                case 2 -> {
+                    if (o instanceof ObjetUtilisable) {
+                        hero.getInventaire().add(o);
+                        positionWorld.remove(o.getPosition());
+                        objets.remove(o);
+                        System.out.println(o.getNom() + " ajouté à l'inventaire.");
+                        actionEffectuee = true;
+                        choixValide = true;
+                    } else {
+                        System.out.println("❌ Cet objet ne peut pas être conservé !");
+                    }
+                }
+                case 0 -> {
+                    System.out.println("Retour au menu principal...");
+                    actionEffectuee = false;
+                    choixValide = true;
+                }
+                default ->
+                    System.out.println("Option invalide !");
+            }
+        } while (!choixValide);
+    }
+
+    /**
+     * Permet d’utiliser un objet de l’inventaire
+     */
     public void utiliserObjetController() {
         Scanner sc = new Scanner(System.in);
         List<Objet> inventaire = hero.getInventaire();
@@ -287,12 +377,15 @@ public class Joueur implements Analyze {
         }
 
         System.out.println("Inventaire :");
-        for (int i = 0; i < inventaire.size(); i++)
+        for (int i = 0; i < inventaire.size(); i++) {
             System.out.println((i + 1) + " - " + inventaire.get(i).getNom());
+        }
         System.out.println("0 - Retour");
 
         int choix = sc.nextInt();
-        if (choix == 0) return;
+        if (choix == 0) {
+            return;
+        }
 
         if (choix < 1 || choix > inventaire.size()) {
             System.out.println("Choix invalide !");

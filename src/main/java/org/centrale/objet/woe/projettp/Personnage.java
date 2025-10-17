@@ -21,26 +21,35 @@ import java.util.*;
  */
 public class Personnage extends Creature implements Analyze {
 
-    /** Liste des effets actifs sur le personnage (potions, nourritures, etc.) */
+    /**
+     * Liste des effets actifs sur le personnage (potions, nourritures, etc.)
+     */
     private List<ObjetUtilisable> effetsActifs = new ArrayList<>();
 
-    /** Liste des objets possédés (inventaire). */
+    /**
+     * Liste des objets possédés (inventaire).
+     */
     private List<Objet> inventaire = new ArrayList<>();
 
     // ================= CONSTRUCTEURS =================
-
-    /** Constructeur par défaut. */
+    /**
+     * Constructeur par défaut.
+     */
     public Personnage() {
         super();
     }
 
-    /** Constructeur complet. */
+    /**
+     * Constructeur complet.
+     */
     public Personnage(String nom, boolean etat, int pVie, int dAtt, int pPar, int paAtt,
-                      int paPar, int dMax, Point2D p, int distanceVision) {
+            int paPar, int dMax, Point2D p, int distanceVision) {
         super(nom, etat, pVie, dAtt, pPar, paAtt, paPar, p, dMax, distanceVision);
     }
 
-    /** Constructeur par copie. */
+    /**
+     * Constructeur par copie.
+     */
     public Personnage(Personnage perso) {
         super(perso);
         this.effetsActifs = new ArrayList<>(perso.effetsActifs);
@@ -48,7 +57,6 @@ public class Personnage extends Creature implements Analyze {
     }
 
     // ================= GETTERS / SETTERS =================
-
     public List<ObjetUtilisable> getEffetsActifs() {
         return effetsActifs;
     }
@@ -66,7 +74,6 @@ public class Personnage extends Creature implements Analyze {
     }
 
     // ================= MÉTHODES =================
-
     /**
      * Permet au personnage de ramasser un objet situé sur sa position et d’en
      * appliquer les effets.
@@ -108,25 +115,33 @@ public class Personnage extends Creature implements Analyze {
         Iterator<ObjetUtilisable> it = effetsActifs.iterator();
         while (it.hasNext()) {
             ObjetUtilisable effet = it.next();
+           Nourriture n = (Nourriture) effet;
 
+            // Decrementamos la duración
             effet.decrementerDuree();
 
-            if (!effet.estActif()) {
+            // Si sigue activo, mostramos cuánto tiempo le queda
+            if (effet.estActif()) {
+                  
+                    System.out.println("⏳ Effet de '" + n.getNom() + "' restant : " + n.getCoolDown()+ " tours.");
+               
+            } else {
                 effet.retirerEffet(this);
                 it.remove();
-                System.out.println("⏳ Effet terminé et retiré : " + effet);
+                System.out.println("✅ Effet terminé et retiré : " + n.getNom());
             }
         }
     }
 
     /**
      * Analyse le comportement automatique d’un PNJ (déplacement ou combat).
+     *
      * @param positionWorld
      * @param creatures
      */
     @Override
     public void analyzer(Set<Point2D> positionWorld, List<Creature> creatures,
-                         List<Objet> objets, int tailleMonde) {
+            List<Objet> objets, int tailleMonde) {
 
         if (this instanceof Paysan) {
             this.deplacementAleatoire(positionWorld, tailleMonde);
@@ -150,7 +165,8 @@ public class Personnage extends Creature implements Analyze {
 
         int action = rand.nextInt(3);
         switch (action) {
-            case 0 -> this.deplacementAleatoire(positionWorld, tailleMonde);
+            case 0 ->
+                this.deplacementAleatoire(positionWorld, tailleMonde);
             case 1 -> {
                 if (!ciblesAdjacentes.isEmpty()) {
                     Creature cible = ciblesAdjacentes.get(rand.nextInt(ciblesAdjacentes.size()));
@@ -169,13 +185,14 @@ public class Personnage extends Creature implements Analyze {
     }
 
     // ===================== SAUVEGARDE EN BASE =====================
-
     /**
-     * Sauvegarde le personnage dans la base de données (table Personnage),
-     * puis appelle la méthode spécifique selon le type concret (Archer, Guerrier, etc.).
+     * Sauvegarde le personnage dans la base de données (table Personnage), puis
+     * appelle la méthode spécifique selon le type concret (Archer, Guerrier,
+     * etc.).
      *
      * @param conn connexion JDBC ouverte
-     * @param idPartie identifiant de la partie à laquelle appartient ce personnage
+     * @param idPartie identifiant de la partie à laquelle appartient ce
+     * personnage
      */
     public void saveToDB(Connection conn, int idPartie) {
         String sql = """
