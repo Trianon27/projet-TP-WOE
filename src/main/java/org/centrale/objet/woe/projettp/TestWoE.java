@@ -32,10 +32,10 @@ public class TestWoE {
         Connection conn = db.getConnection();
 
         if (conn == null) {
-            System.err.println("❌ Impossible de démarrer le jeu : connexion base échouée.");
+            System.err.println("❌ Impossible de demarrer le jeu : connexion base echouee.");
             return;
         }
-        System.out.println("✅ Connexion réussie à la base de données !");
+        System.out.println("✅ Connexion reussie a la base de donnees !");
 
         // ======================================================
         // 2️⃣ Menu principal : Charger ou Nouvelle partie
@@ -55,7 +55,7 @@ public class TestWoE {
         try {
             choix = Integer.parseInt(sc.nextLine());
         } catch (NumberFormatException e) {
-            System.out.println("⚠️ Entrée invalide, nouvelle partie par défaut.");
+            System.out.println("⚠️ Entree invalide, nouvelle partie par defaut.");
         }
 
         // ======================================================

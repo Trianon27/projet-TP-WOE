@@ -127,15 +127,17 @@ public class World {
 
             Point2D p = positionAleatoire(rand);
             switch (choix) {
-                case 1 -> moi.hero = new Guerrier(nom, true,
-                        rand.nextInt(101) + 50, rand.nextInt(21) + 10,
-                        rand.nextInt(21) + 5, rand.nextInt(51) + 50,
-                        rand.nextInt(51) + 30, p, 1, 5);
+                case 1 ->
+                    moi.hero = new Guerrier(nom, true,
+                            rand.nextInt(101) + 100, rand.nextInt(21) + 20,
+                            rand.nextInt(21) + 20, rand.nextInt(51) + 50,
+                            rand.nextInt(51) + 30, p, 1, 4);
 
-                case 2 -> moi.hero = new Archer(nom, true,
-                        rand.nextInt(21) + 80, rand.nextInt(11) + 5,
-                        rand.nextInt(11) + 5, rand.nextInt(51) + 50,
-                        rand.nextInt(51) + 30, p, 2, 6, rand.nextInt(11) + 5);
+                case 2 ->
+                    moi.hero = new Archer(nom, true,
+                            rand.nextInt(21) + 80, rand.nextInt(11) + 5,
+                            rand.nextInt(11) + 5, rand.nextInt(51) + 50,
+                            rand.nextInt(51) + 30, p, 2, 8, rand.nextInt(11) + 5);
             }
 
         } while (!valide);
@@ -144,7 +146,6 @@ public class World {
         this.ListCreature.add(moi.hero);
         return moi;
     }
-
 
     // ====================== GeNeRATION DU MONDE ======================
     public void creerMondeAlea() {
@@ -214,7 +215,7 @@ public class World {
                     e.analyzer(this.positionsOccupees, this.ListCreature, this.ListObjets, TAILLE_MONDE);
                 }
             }
-            
+
             moi.hero.mettreAJourEffets();
 
             //completer ici
@@ -242,7 +243,7 @@ public class World {
 
             this.afficheWorld(moi);
         }
-        System.out.println("🏁 Simulation terminée après " + nbTours + " tours !");
+        System.out.println("🏁 Simulation terminee apres " + nbTours + " tours !");
     }
 
     // ====================== AFFICHAGE ======================
@@ -374,9 +375,10 @@ public class World {
 
     // ====================== SAUVEGARDE MONDE ======================
     /**
-    * Sauvegarde complète du monde, du héros et de son inventaire dans la base PostgreSQL.
-    * Compatible avec un inventaire ne contenant que des nourritures.
-    */
+     * Sauvegarde complète du monde, du héros et de son inventaire dans la base
+     * PostgreSQL. Compatible avec un inventaire ne contenant que des
+     * nourritures.
+     */
     public int saveWorldToDB(Connection conn, Joueur joueur, String nomPartie, int tourActuel, int toursRestants) {
         int idPartie = -1;
         try {
@@ -413,7 +415,7 @@ public class World {
                 idJoueur = rsJ.getInt("id_joueur");
             }
             try (PreparedStatement psMaj = conn.prepareStatement(
-                "UPDATE Partie SET id_joueur = ? WHERE id_partie = ?"
+                    "UPDATE Partie SET id_joueur = ? WHERE id_partie = ?"
             )) {
                 psMaj.setInt(1, idJoueur);
                 psMaj.setInt(2, idPartie);
@@ -423,7 +425,7 @@ public class World {
             // 4) Créer l’inventaire du joueur
             int idInventaire;
             try (PreparedStatement psInv = conn.prepareStatement(
-                "INSERT INTO Inventaire (id_joueur) VALUES (?) RETURNING id_inventaire"
+                    "INSERT INTO Inventaire (id_joueur) VALUES (?) RETURNING id_inventaire"
             )) {
                 psInv.setInt(1, idJoueur);
                 var rsI = psInv.executeQuery();
@@ -493,11 +495,17 @@ public class World {
 
             // 8) Sauvegarder toutes les créatures
             for (Creature c : this.ListCreature) {
-                if (c instanceof Guerrier g) g.saveToDB(conn, idPartie);
-                else if (c instanceof Archer a) a.saveToDB(conn, idPartie);
-                else if (c instanceof Paysan p) p.saveToDB(conn, idPartie);
-                else if (c instanceof Loup l) l.saveToDB(conn, idPartie);
-                else if (c instanceof Lapin la) la.saveToDB(conn, idPartie);
+                if (c instanceof Guerrier g) {
+                    g.saveToDB(conn, idPartie);
+                } else if (c instanceof Archer a) {
+                    a.saveToDB(conn, idPartie);
+                } else if (c instanceof Paysan p) {
+                    p.saveToDB(conn, idPartie);
+                } else if (c instanceof Loup l) {
+                    l.saveToDB(conn, idPartie);
+                } else if (c instanceof Lapin la) {
+                    la.saveToDB(conn, idPartie);
+                }
             }
 
             System.out.println("🌍 Monde sauvegardé avec succès (id_partie=" + idPartie + ")");
@@ -510,15 +518,13 @@ public class World {
         }
     }
 
- 
     /**
-     * Recharge le monde complet depuis la base PostgreSQL
-     * pour une partie donnée (idPartie).
+     * Recharge le monde complet depuis la base PostgreSQL pour une partie
+     * donnée (idPartie).
      *
-     * Restaure :
-     *  - Toutes les créatures sauf le héros du joueur
-     *  - Tous les objets (hors inventaire)
-     *  - Le contenu de l’inventaire (nourritures uniquement)
+     * Restaure : - Toutes les créatures sauf le héros du joueur - Tous les
+     * objets (hors inventaire) - Le contenu de l’inventaire (nourritures
+     * uniquement)
      */
     public void loadWorldFromDB(Connection conn, int idPartie, Joueur joueur) {
         this.ListCreature.clear();
@@ -547,24 +553,42 @@ public class World {
                     positionsOccupees.add(pos);
 
                     switch (type == null ? "" : type.toLowerCase()) {
-                        case "guerrier" -> ListCreature.add(new Guerrier(
-                                rs.getString("nom"), true,
-                                rs.getInt("ptVie"), rs.getInt("degAtt"), rs.getInt("ptPar"),
-                                rs.getInt("pourcentageAtt"), rs.getInt("pourcentagePar"),
-                                pos, rs.getInt("distAttMax"), rs.getInt("distVue")
-                        ));
-                        case "archer" -> ListCreature.add(new Archer(
-                                rs.getString("nom"), true,
-                                rs.getInt("ptVie"), rs.getInt("degAtt"), rs.getInt("ptPar"),
-                                rs.getInt("pourcentageAtt"), rs.getInt("pourcentagePar"),
-                                pos, rs.getInt("distAttMax"), rs.getInt("distVue"), 10
-                        ));
-                        case "paysan" -> ListCreature.add(new Paysan(
-                                rs.getString("nom"), true,
-                                rs.getInt("ptVie"), rs.getInt("degAtt"), rs.getInt("ptPar"),
-                                rs.getInt("pourcentageAtt"), rs.getInt("pourcentagePar"),
-                                rs.getInt("distAttMax"), pos, rs.getInt("distVue")
-                        ));
+                        case "guerrier" -> {
+                            Guerrier guerrier = new Guerrier(
+                                    rs.getString("nom"), true,
+                                    rs.getInt("ptVie"), rs.getInt("degAtt"), rs.getInt("ptPar"),
+                                    rs.getInt("pourcentageAtt"), rs.getInt("pourcentagePar"),
+                                    pos, rs.getInt("distAttMax"), rs.getInt("distVue")
+                            );
+                            ListCreature.add(guerrier);
+                            if (guerrier instanceof Analyze) {
+                                ListAnalyze.add(guerrier);
+                            }
+                        }
+                        case "archer" -> {
+                            Archer archer = new Archer(
+                                    rs.getString("nom"), true,
+                                    rs.getInt("ptVie"), rs.getInt("degAtt"), rs.getInt("ptPar"),
+                                    rs.getInt("pourcentageAtt"), rs.getInt("pourcentagePar"),
+                                    pos, rs.getInt("distAttMax"), rs.getInt("distVue"), 10
+                            );
+                            ListCreature.add(archer);
+                            if (archer instanceof Analyze) {
+                                ListAnalyze.add(archer);
+                            }
+                        }
+                        case "paysan" -> {
+                            Paysan paysan = new Paysan(
+                                    rs.getString("nom"), true,
+                                    rs.getInt("ptVie"), rs.getInt("degAtt"), rs.getInt("ptPar"),
+                                    rs.getInt("pourcentageAtt"), rs.getInt("pourcentagePar"),
+                                    rs.getInt("distAttMax"), pos, rs.getInt("distVue")
+                            );
+                            ListCreature.add(paysan);
+                            if (paysan instanceof Analyze) {
+                                ListAnalyze.add(paysan);
+                            }
+                        }
                     }
                 }
             }
@@ -584,6 +608,7 @@ public class World {
                     );
                     ListCreature.add(l);
                     positionsOccupees.add(l.getPos());
+                    if(l instanceof Analyze) ListAnalyze.add(l);
                 }
             }
             try (PreparedStatement ps = conn.prepareStatement("SELECT * FROM Lapin WHERE id_partie = ?")) {
@@ -600,6 +625,7 @@ public class World {
                     );
                     ListCreature.add(la);
                     positionsOccupees.add(la.getPos());
+                    if(la instanceof Analyze) ListAnalyze.add(la);
                 }
             }
 
@@ -671,6 +697,7 @@ public class World {
                     );
                     ListObjets.add(nt);
                     positionsOccupees.add(nt.getPosition());
+                    if(nt instanceof Analyze) ListAnalyze.add(nt);
                 }
             }
 

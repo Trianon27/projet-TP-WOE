@@ -96,6 +96,7 @@ public class Joueur implements Analyze {
 
         do {
             actionEffectuee = false;
+            System.out.println("Vous etes represente sur la carte par la lettre 'S'");
             System.out.println("\nActuellement, vous pouvez :");
 
             List<String> options = new ArrayList<>();
@@ -127,14 +128,14 @@ public class Joueur implements Analyze {
                     Il vous sera nécessaire pour restaurer votre partie plus tard.
                 """);
                 } else {
-                    System.out.println("❌ Erreur : la sauvegarde n’a pas pu être réalisée.");
+                    System.out.println("❌ Erreur : la sauvegarde n’a pas pu etre réalisee.");
                 }
 
                 actionEffectuee = false; // reste dans le menu après sauvegarde
             });
 
             // 1️⃣ Déplacement
-            options.add("Se déplacer");
+            options.add("Se deplacer");
             actions.add(() -> deplacerController(creatures, world.TAILLE_MONDE));
 
             // 2️⃣ Attaque (si cibles proches)
@@ -170,17 +171,17 @@ public class Joueur implements Analyze {
             // 5️⃣ Ne rien faire
             options.add("Ne rien faire");
             actions.add(() -> {
-                System.out.println("Vous avez décidé de ne rien faire ce tour.");
+                System.out.println("Vous avez decide de ne rien faire ce tour.");
                 actionEffectuee = true;
             });
 
             // 🆕 6️⃣ Quitter (touche spéciale “f”)
-            System.out.println("Appuyez sur la touche 'f' à tout moment pour quitter le jeu.");
+            System.out.println("Appuyez sur la touche 'f' a tout moment pour quitter le jeu.");
             for (int i = 0; i < options.size(); i++) {
                 System.out.println(i + " - " + options.get(i));
             }
 
-            System.out.print("Sélectionnez une option : ");
+            System.out.print("Selectionnez une option : ");
             String saisie = sc.next();
 
             // === 🆕 Si l'utilisateur tape 'f' ou 'F' → quitter proprement
@@ -220,7 +221,7 @@ public class Joueur implements Analyze {
             try {
                 choix = Integer.parseInt(saisie);
             } catch (NumberFormatException e) {
-                System.out.println("⚠️ Entrée invalide ! Veuillez entrer un nombre ou 'f' pour quitter.");
+                System.out.println("⚠️ Entree invalide ! Veuillez entrer un nombre ou 'f' pour quitter.");
                 continue;
             }
 
@@ -304,7 +305,7 @@ public class Joueur implements Analyze {
                 choixValide = false;
             } else {
                 hero.deplacer(dx, dy);
-                System.out.println("Vous êtes maintenant en " + hero.getPos());
+                System.out.println("Vous etes maintenant en " + hero.getPos());
                 actionEffectuee = true;
             }
 
@@ -324,13 +325,13 @@ public class Joueur implements Analyze {
         ciblesAdjacentes.removeIf(c -> c == this.hero || c.getNom().equals(this.hero.getNom()));
 
         if (ciblesAdjacentes.isEmpty()) {
-            System.out.println("❌ Aucune créature ennemie à portée !");
+            System.out.println("❌ Aucune creature ennemie a portee !");
             return;
         }
 
         do {
             choixValide = true;
-            System.out.println("Vous pouvez attaquer l'une des créatures adjacentes :");
+            System.out.println("Vous pouvez attaquer l'une des creatures adjacentes :");
             for (int i = 0; i < ciblesAdjacentes.size(); i++) {
                 Creature c = ciblesAdjacentes.get(i);
                 System.out.println((i + 1) + " - " + c.getNom() + " (" + c.getPtVie() + " PV)");
@@ -341,7 +342,7 @@ public class Joueur implements Analyze {
 
             System.out.println(optionNeRienFaire + " - Ne rien faire");
             System.out.println(optionRetour + " - Retour");
-            System.out.println("Sélectionnez une option :");
+            System.out.println("Selectionnez une option :");
             int choix = sc.nextInt();
 
             if (choix > 0 && choix <= ciblesAdjacentes.size()) {
@@ -349,7 +350,7 @@ public class Joueur implements Analyze {
 
                 // 🧱 Vérification ultime : pas d’auto-attaque
                 if (cible == this.hero || cible.getNom().equals(this.hero.getNom())) {
-                    System.out.println("🚫 Vous ne pouvez pas vous attaquer vous-même !");
+                    System.out.println("🚫 Vous ne pouvez pas vous attaquer vous-meme !");
                     choixValide = false;
                     continue;
                 }
@@ -362,7 +363,7 @@ public class Joueur implements Analyze {
                 }
 
             } else if (choix == optionNeRienFaire) {
-                System.out.println("Vous décidez de ne rien faire.");
+                System.out.println("Vous decidez de ne rien faire.");
                 actionEffectuee = true;
             } else if (choix == optionRetour) {
                 System.out.println("Retour au menu principal...");
@@ -383,9 +384,9 @@ public class Joueur implements Analyze {
         boolean choixValide = false;
 
         do {
-            System.out.println("Vous avez trouvé : " + o.getNom());
-            System.out.println("1 - Utiliser immédiatement");
-            System.out.println("2 - Ajouter à l'inventaire");
+            System.out.println("Vous avez trouve : " + o.getNom());
+            System.out.println("1 - Utiliser immediatement");
+            System.out.println("2 - Ajouter a l'inventaire");
             System.out.println("0 - Retour");
 
             int choix = sc.nextInt();
@@ -402,11 +403,11 @@ public class Joueur implements Analyze {
                         hero.getInventaire().add(o);
                         positionWorld.remove(o.getPosition());
                         objets.remove(o);
-                        System.out.println(o.getNom() + " ajouté à l'inventaire.");
+                        System.out.println(o.getNom() + " ajoute a l'inventaire.");
                         actionEffectuee = true;
                         choixValide = true;
                     } else {
-                        System.out.println("❌ Cet objet ne peut pas être conservé !");
+                        System.out.println("❌ Cet objet ne peut pas etre conserve !");
                     }
                 }
                 case 0 -> {
@@ -532,7 +533,7 @@ public class Joueur implements Analyze {
             world.setCurrentPartieId(idPartie);
 
             System.out.println("""
-                ✅ Partie restaurée avec succès !
+                ✅ Partie restauree avec succès !
                 🎮 Personnage : """ + this.hero.getNom() + """
                 🕓 Tour actuel : """ + tourActuel + """
                 ⏳ Tours restants : """ + toursRestants + """

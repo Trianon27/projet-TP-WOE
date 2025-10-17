@@ -128,7 +128,7 @@ public class Guerrier extends Personnage implements Combattant {
             // Vérifie si la créature est vaincue
             if (c.getPtVie() <= 0) {
                 System.out.println();
-                System.out.println("**** " + c.getNom() + " a ete vaincu. ****");
+                System.out.println("****** " + c.getNom() + " a ete vaincu. ******");
                 System.out.println();
                 c.mourir(positionWorld,creatures);
             }

@@ -146,7 +146,10 @@ public class Archer extends Personnage implements Combattant {
                     c.setPtVie(e_vie);
                 }
 
+            }else{
+                System.out.println("Attaque echoue");
             }
+            
 
         } else if (this.getPos().distance(c.getPos()) <= (this.getDistAttMax() * Math.sqrt(2))
                 && this.getPos().distance(c.getPos()) > (Math.sqrt(2)) && this.getNbFleches() > 0 ) {
@@ -181,7 +184,7 @@ public class Archer extends Personnage implements Combattant {
 
         if (c.getPtVie() <= 0) {
             System.out.println();
-            System.out.println("**** " + c.getNom() + " a ete vaincu. ****");
+            System.out.println("******* " + c.getNom() + " a ete vaincu. *******");
             System.out.println();
             c.mourir(positionWorld,creatures);
         }

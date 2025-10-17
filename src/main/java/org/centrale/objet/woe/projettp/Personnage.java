@@ -128,7 +128,7 @@ public class Personnage extends Creature implements Analyze {
             } else {
                 effet.retirerEffet(this);
                 it.remove();
-                System.out.println("✅ Effet terminé et retiré : " + n.getNom());
+                System.out.println("✅ Effet termine et retire : " + n.getNom());
             }
         }
     }
@@ -175,7 +175,7 @@ public class Personnage extends Creature implements Analyze {
                         combattant.combattre(cible, positionWorld, creatures);
                     }
                 } else {
-                    System.out.println(this.getNom() + " veut attaquer mais il n'y a personne à proximité.");
+                    System.out.println(this.getNom() + " veut attaquer mais il n'y a personne a proximite.");
                 }
             }
             default -> {
@@ -233,7 +233,7 @@ public class Personnage extends Creature implements Analyze {
             }
 
             System.out.println("✅ " + this.getClass().getSimpleName()
-                    + " inséré en base (ID " + idPersonnage + ")");
+                    + " insere en base (ID " + idPersonnage + ")");
         } catch (SQLException e) {
             System.err.println("❌ Erreur Personnage.saveToDB : " + e.getMessage());
         }

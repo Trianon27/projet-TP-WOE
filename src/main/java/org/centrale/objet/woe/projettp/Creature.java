@@ -184,13 +184,13 @@ public class Creature extends ElementDeJeu implements Deplacable {
                 positionsOccupees.remove(anciennePos);
                 positionsOccupees.add(nouvellePos);
                 this.pos = nouvellePos;
-                System.out.println(this.getNom() + " se déplace en (" + nx + ", " + ny + ").");
+                //System.out.println(this.getNom() + " se delace en (" + nx + ", " + ny + ").");
                 return;
             }
             essais++;
         }
 
-        System.out.println(this.getNom() + " ne peut pas se déplacer : cases libres non trouvées.");
+        //System.out.println(this.getNom() + " ne peut pas se deplacer : cases libres non trouvees.");
     }
 
     /**
@@ -213,7 +213,7 @@ public class Creature extends ElementDeJeu implements Deplacable {
         System.out.println();
         System.out.println("Nom : " + nom);
         System.out.println("Points de vie : " + ptVie);
-        System.out.println("Dégâts d’attaque : " + degAtt);
+        System.out.println("Degats d’attaque : " + degAtt);
         System.out.println("Points de parade : " + ptPar);
         System.out.println("Pourcentage d’attaque : " + pageAtt);
         System.out.println("Pourcentage de parade : " + pagePar);

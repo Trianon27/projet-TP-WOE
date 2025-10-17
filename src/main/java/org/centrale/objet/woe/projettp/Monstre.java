@@ -143,7 +143,7 @@ public class Monstre extends Creature implements Analyze {
 
                 // Sinon, attaquer selon le type de dangerosité
                 if (this.dangerosite == Dangerosite.DANGEREUX) {
-                    System.out.println("🔥 " + this.getNom() + " (DANGEREUX) attaque toutes les cibles à portée !");
+                    System.out.println("🔥 " + this.getNom() + " (DANGEREUX) attaque toutes les cibles a portee !");
                     for (Creature cible : ciblesAdjacentes) {
                         if (this instanceof Combattant combattant) {
                             combattant.combattre(cible, positionWorld, creatures);
@@ -166,6 +166,6 @@ public class Monstre extends Creature implements Analyze {
     @Override
     public void affiche() {
         super.affiche();
-        System.out.println("Dangerosité : " + dangerosite);
+        System.out.println("Dangerosite : " + dangerosite);
     }
 }
