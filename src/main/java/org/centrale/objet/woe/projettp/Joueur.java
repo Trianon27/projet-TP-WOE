@@ -83,12 +83,13 @@ public class Joueur implements Analyze {
         analyzer(positionWorld, creatures, objets, null, null);
     }
 
+    
     /**
-     * Variante de analyzer pour le mode connecte à la base. Appelee par
-     * World.tourDeJour(..., Connection).
+     * Variante de analyzer pour le mode connecté à la base.
+     * → Ajout touche "f" pour quitter à tout moment, avec option de sauvegarde.
      */
     public void analyzer(Set<Point2D> positionWorld, List<Creature> creatures,
-            List<Objet> objets, World world, Connection conn) {
+                         List<Objet> objets, World world, Connection conn) {
 
         Scanner sc = new Scanner(System.in);
         Point2D posHero = this.hero.getPos();
@@ -100,7 +101,7 @@ public class Joueur implements Analyze {
             List<String> options = new ArrayList<>();
             List<Runnable> actions = new ArrayList<>();
 
-            // 0️⃣ Sauvegarder la partie (toujours disponible)
+            // 0️⃣ Sauvegarder la partie
             options.add("Sauvegarder la partie");
             actions.add(() -> {
                 sc.nextLine(); // consommer le retour ligne
@@ -118,7 +119,6 @@ public class Joueur implements Analyze {
 
                 if (idPartie != -1) {
                     world.setCurrentPartieId(idPartie);
-
                     System.out.println("""
                     ✅ Partie sauvegardée avec succès !
                     🆔 ID de la partie : """ + idPartie + """
@@ -140,6 +140,7 @@ public class Joueur implements Analyze {
             // 2️⃣ Attaque (si cibles proches)
             List<Creature> ciblesAdjacentes = new ArrayList<>();
             for (Creature c : creatures) {
+                if (c == this.hero) continue; // 🚫 ignore le héros lui-même
                 double dx = Math.abs(c.getPos().getX() - posHero.getX());
                 double dy = Math.abs(c.getPos().getY() - posHero.getY());
                 if (dx <= this.hero.getDistAttMax() && dy <= this.hero.getDistAttMax() && !(dx == 0 && dy == 0)) {
@@ -153,7 +154,7 @@ public class Joueur implements Analyze {
 
             // 3️⃣ Interaction avec un objet présent
             for (Objet o : objets) {
-                if (o.getPosition().equals(posHero)) {
+                if (o.getPosition().equals(posHero) && !(o instanceof NuageToxique)) {
                     options.add("Interagir avec un objet");
                     actions.add(() -> interactionController(o, positionWorld, objets));
                     break;
@@ -173,18 +174,53 @@ public class Joueur implements Analyze {
                 actionEffectuee = true;
             });
 
-            // Afficher les options dynamiques
+            // 🆕 6️⃣ Quitter (touche spéciale “f”)
+            System.out.println("Appuyez sur la touche 'f' à tout moment pour quitter le jeu.");
             for (int i = 0; i < options.size(); i++) {
                 System.out.println(i + " - " + options.get(i));
             }
 
             System.out.print("Sélectionnez une option : ");
+            String saisie = sc.next();
+
+            // === 🆕 Si l'utilisateur tape 'f' ou 'F' → quitter proprement
+            if (saisie.equalsIgnoreCase("f")) {
+                System.out.print("🔚 Voulez-vous sauvegarder avant de quitter ? (o/n) : ");
+                String reponse = sc.next().trim().toLowerCase();
+                if (reponse.equals("o") || reponse.equals("oui")) {
+                    sc.nextLine(); // vider buffer
+                    System.out.print("💾 Entrez un nom pour votre partie : ");
+                    String nomPartie = sc.nextLine();
+                    if (nomPartie.trim().isEmpty()) {
+                        nomPartie = "Partie_sans_nom_" + System.currentTimeMillis();
+                    }
+
+                    int tourActuel = world.getCurrentTurn();
+                    int toursRestants = world.getRemainingTurns();
+                    int idPartie = world.saveWorldToDB(conn, this, nomPartie, tourActuel, toursRestants);
+
+                    if (idPartie != -1) {
+                        System.out.println("""
+                        ✅ Partie sauvegardée avec succès avant la fermeture !
+                        🆔 ID de la partie : """ + idPartie + """
+                        👋 À bientôt !
+                        """);
+                    } else {
+                        System.out.println("❌ Erreur lors de la sauvegarde. Fermeture sans sauvegarde.");
+                    }
+                } else {
+                    System.out.println("👋 Fermeture sans sauvegarde.");
+                }
+                System.exit(0); // quitte complètement le jeu
+                return;
+            }
+
+            // === Sinon, traiter l’entrée comme un choix numérique
             int choix;
             try {
-                choix = sc.nextInt();
-            } catch (InputMismatchException e) {
-                System.out.println("⚠️ Entrée invalide ! Veuillez entrer un nombre.");
-                sc.nextLine();
+                choix = Integer.parseInt(saisie);
+            } catch (NumberFormatException e) {
+                System.out.println("⚠️ Entrée invalide ! Veuillez entrer un nombre ou 'f' pour quitter.");
                 continue;
             }
 
@@ -196,6 +232,7 @@ public class Joueur implements Analyze {
 
         } while (!actionEffectuee);
     }
+
 
     // ===================== CONTRÔLEURS =====================
     /**
@@ -274,12 +311,22 @@ public class Joueur implements Analyze {
         } while (!choixValide);
     }
 
+    
     /**
-     * Attaque les creatures à portee
+     * Contrôle l’action d’attaque du joueur sur les créatures adjacentes.
+     * Empêche d’attaquer son propre héros.
      */
     public void attaqueController(List<Creature> ciblesAdjacentes, Set<Point2D> positionWorld, List<Creature> creatures) {
         Scanner sc = new Scanner(System.in);
         boolean choixValide;
+
+        // 🧱 Sécurité : filtrer toutes les cibles qui sont le héros lui-même
+        ciblesAdjacentes.removeIf(c -> c == this.hero || c.getNom().equals(this.hero.getNom()));
+
+        if (ciblesAdjacentes.isEmpty()) {
+            System.out.println("❌ Aucune créature ennemie à portée !");
+            return;
+        }
 
         do {
             choixValide = true;
@@ -299,12 +346,21 @@ public class Joueur implements Analyze {
 
             if (choix > 0 && choix <= ciblesAdjacentes.size()) {
                 Creature cible = ciblesAdjacentes.get(choix - 1);
+
+                // 🧱 Vérification ultime : pas d’auto-attaque
+                if (cible == this.hero || cible.getNom().equals(this.hero.getNom())) {
+                    System.out.println("🚫 Vous ne pouvez pas vous attaquer vous-même !");
+                    choixValide = false;
+                    continue;
+                }
+
                 if (hero instanceof Combattant combattant) {
                     combattant.combattre(cible, positionWorld, creatures);
                     actionEffectuee = true;
                 } else {
                     System.out.println(hero.getNom() + " ne peut pas attaquer !");
                 }
+
             } else if (choix == optionNeRienFaire) {
                 System.out.println("Vous décidez de ne rien faire.");
                 actionEffectuee = true;
@@ -483,7 +539,7 @@ public class Joueur implements Analyze {
             """);
 
             // === Charger le monde complet (créatures + objets)
-            world.loadWorldFromDB(conn, idPartie);
+            world.loadWorldFromDB(conn, idPartie, this);
 
             // 🟩 Ajouter immédiatement le héros dans la liste des créatures
             world.ListCreature.add(this.hero);
