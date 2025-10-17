@@ -1,23 +1,22 @@
 package org.centrale.objet.woe.projettp;
 
 import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.Scanner;
 
 /**
  * Classe principale de test pour le jeu World of ECN (WoE).
- * 
- * Combine les tests academiques (TPs) et la version connectee à la base PostgreSQL.
- * 
- * Fonctionnalites :
- *  - Connexion à la base PostgreSQL
- *  - Creation d’un monde aleatoire
- *  - Creation d’un joueur interactif
- *  - Simulation de plusieurs tours de jeu
- *  - Sauvegarde complète du monde en base
- *  - Experimentations sur les collections (List, LinkedList, etc.)
- * 
- * @version 5.0 
+ *
+ * Combine les tests académiques (TPs) et la version connectée à la base PostgreSQL.
+ *
+ * Fonctionnalités :
+ * - Connexion à la base PostgreSQL
+ * - Menu principal (charger ou créer une nouvelle partie)
+ * - Création d’un monde aléatoire
+ * - Création ou restauration d’un joueur interactif
+ * - Simulation de plusieurs tours de jeu
+ * - Sauvegarde complète du monde en base
+ *
+ * @version 6.0 (ajout du chargement de partie au démarrage)
  */
 public class TestWoE {
 
@@ -33,60 +32,59 @@ public class TestWoE {
         Connection conn = db.getConnection();
 
         if (conn == null) {
-            System.err.println("Impossible de demarrer le jeu : connexion base echouee.");
+            System.err.println("❌ Impossible de démarrer le jeu : connexion base échouée.");
             return;
         }
+        System.out.println("✅ Connexion réussie à la base de données !");
 
         // ======================================================
-        // 2️⃣ Creation du monde et du joueur
+        // 2️⃣ Menu principal : Charger ou Nouvelle partie
         // ======================================================
+        Scanner sc = new Scanner(System.in);
         World w = new World();
-        w.creerMondeAlea();
+        Joueur moi;
 
-        Joueur moi = w.creationJoueur();
-        w.afficheWorld(moi);
+        System.out.println("""
+            === MENU PRINCIPAL ===
+            0 - Charger une partie existante
+            1 - Nouvelle partie
+        """);
 
-        // ======================================================
-        // 3️⃣ Boucle principale du jeu
-        // ======================================================
+        System.out.print("Votre choix : ");
+        int choix = -1;
         try {
-            // Simulation de 10 à 15 tours (modifiable)
-            w.tourDeJour(15, moi, conn);
-        } catch (Exception e) {
-            System.err.println("Erreur pendant la simulation : " + e.getMessage());
-            e.printStackTrace();
+            choix = Integer.parseInt(sc.nextLine());
+        } catch (NumberFormatException e) {
+            System.out.println("⚠️ Entrée invalide, nouvelle partie par défaut.");
         }
 
         // ======================================================
-        // 4️⃣ Sauvegarde complète du monde et du joueur
+        // 3️⃣ Selon le choix de l'utilisateur
         // ======================================================
+        if (choix == 0) {
+            // 🔁 Chargement d’une partie existante
+            moi = new Joueur();
+            moi.chargerPartieDepuisDebut(conn, w);
+
+        } else {
+            // 🆕 Création d’une nouvelle partie
+            System.out.println("\n=== NOUVELLE PARTIE ===");
+            w.creerMondeAlea();
+            moi = w.creationJoueur();
+            w.afficheWorld(moi);
+
+            try {
+                w.tourDeJour(10, moi, conn);
+            } catch (Exception e) {
+                System.err.println("⚠️ Erreur pendant la simulation : " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
 
         // ======================================================
-        // 5️⃣ Fermeture propre de la connexion
+        // 4️⃣ Fermeture propre de la connexion
         // ======================================================
         db.close();
         System.out.println("\n=== Fin du jeu WoE ===");
-
-        // ======================================================
-        // EXPeRIMENTATIONS SUPPLeMENTAIRES (TPs precedents)
-        // ======================================================
-        /*
-        // --- Test distance entre deux points ---
-        Point2D p1 = new Point2D(0,0);
-        Point2D p2 = new Point2D(2,2);
-        System.out.println("Distance : " + p1.distance(p2));
-
-        // --- Test combat ---
-        World w2 = new World();
-        w2.creerMondeAlea();
-        w2.ListCreature.get(0).combattre(w2.ListCreature.get(1), w2.getPositionsOccupees());
-
-        // --- Test comparatif de performance ---
-        World w3 = new World();
-        ArrayList<Creature> arrayList = new ArrayList<>();
-        LinkedList<Creature> linkedList = new LinkedList<>();
-        w3.creationLabDeMondePourComparerDesTemps(arrayList, 3);
-        w3.creationLabDeMondePourComparerDesTemps(linkedList, 3);
-        */
     }
 }

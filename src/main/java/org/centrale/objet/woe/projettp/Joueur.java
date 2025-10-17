@@ -414,4 +414,90 @@ public class Joueur implements Analyze {
             System.err.println("Erreur sauvegarde Joueur : " + e.getMessage());
         }
     }
+    
+    
+    public void chargerPartieDepuisDebut(Connection conn, World world) {
+        Scanner sc = new Scanner(System.in);
+        System.out.println("=== 🔄 Chargement d'une partie sauvegardée ===");
+        System.out.print("Entrez l'ID de la partie à restaurer : ");
+        int idPartie = sc.nextInt();
+
+        try (PreparedStatement ps = conn.prepareStatement("""
+            SELECT p.tour_actuel, p.tours_restants,
+                   pers.nom, pers.ptVie, pers.degAtt, pers.ptPar,
+                   pers.pourcentageAtt, pers.pourcentagePar, pers.distAttMax, pers.distVue,
+                   pers.posX, pers.posY, pers.type_personnage
+            FROM Partie p
+            JOIN Personnage pers ON p.id_partie = pers.id_partie
+            WHERE p.id_partie = ?
+            LIMIT 1
+        """)) {
+            ps.setInt(1, idPartie);
+            var rs = ps.executeQuery();
+
+            if (!rs.next()) {
+                System.out.println("❌ Aucune partie trouvée avec cet ID !");
+                return;
+            }
+
+            // === Récupération des infos ===
+            int tourActuel = rs.getInt("tour_actuel");
+            int toursRestants = rs.getInt("tours_restants");
+            String nomPerso = rs.getString("nom");
+            int ptVie = rs.getInt("ptVie");
+            int degAtt = rs.getInt("degAtt");
+            int ptPar = rs.getInt("ptPar");
+            int pourcentageAtt = rs.getInt("pourcentageAtt");
+            int pourcentagePar = rs.getInt("pourcentagePar");
+            int distAttMax = rs.getInt("distAttMax");
+            int distVue = rs.getInt("distVue");  // 🟢 important
+            int posX = rs.getInt("posX");
+            int posY = rs.getInt("posY");
+            String typePerso = rs.getString("type_personnage");
+
+            // === Création du héros ===
+            Point2D pos = new Point2D(posX, posY);
+            switch (typePerso.toLowerCase()) {
+                case "guerrier" ->
+                    this.hero = new Guerrier(nomPerso, true, ptVie, degAtt, ptPar,
+                            pourcentageAtt, pourcentagePar, pos, 1, distAttMax);
+                case "archer" ->
+                    this.hero = new Archer(nomPerso, true, ptVie, degAtt, ptPar,
+                            pourcentageAtt, pourcentagePar, pos, 2, distAttMax, 10);
+                default ->
+                    this.hero = new Guerrier(nomPerso, true, ptVie, degAtt, ptPar,
+                            pourcentageAtt, pourcentagePar, pos, 1, distAttMax);
+            }
+
+            // ✅ Correction : restaurer la distance de vision
+            this.hero.setDistanceVision(distVue);
+
+            // === Lier à la partie courante ===
+            world.setCurrentPartieId(idPartie);
+
+            System.out.println("""
+                ✅ Partie restaurée avec succès !
+                🎮 Personnage : """ + this.hero.getNom() + """
+                🕓 Tour actuel : """ + tourActuel + """
+                ⏳ Tours restants : """ + toursRestants + """
+            """);
+
+            // === Charger le monde complet (créatures + objets)
+            world.loadWorldFromDB(conn, idPartie);
+
+            // 🟩 Ajouter immédiatement le héros dans la liste des créatures
+            world.ListCreature.add(this.hero);
+
+            // ✅ AFFICHER LE MONDE avant le premier tour
+            System.out.println("\n=== MONDE RESTAURÉ ===");
+            world.afficheWorld(this);
+
+            // === Reprendre le jeu ===
+            world.tourDeJour(toursRestants, this, conn);
+
+        } catch (Exception e) {
+            System.err.println("❌ Erreur pendant le chargement : " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
 }
