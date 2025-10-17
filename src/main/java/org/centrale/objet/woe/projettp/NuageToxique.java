@@ -6,19 +6,21 @@ import java.sql.SQLException;
 import java.util.*;
 
 /**
- * La classe {@code NuageToxique} represente un element dangereux du monde du jeu
- * generant des degâts continus dans une zone determinee pendant un certain nombre de tours.
+ * La classe {@code NuageToxique} represente un element dangereux du monde du
+ * jeu generant des degâts continus dans une zone determinee pendant un certain
+ * nombre de tours.
  * <p>
- * Un nuage toxique est un objet environnemental (heritant de {@link Objet})
- * qui inflige un certain nombre de points de degâts à toute creature
- * se trouvant dans sa zone d’effet, et disparaît après une duree limitee.
+ * Un nuage toxique est un objet environnemental (heritant de {@link Objet}) qui
+ * inflige un certain nombre de points de degâts à toute creature se trouvant
+ * dans sa zone d’effet, et disparaît après une duree limitee.
  * </p>
  *
  * <h3>Caracteristiques principales :</h3>
  * <ul>
- *   <li>Degâts infliges par tour ({@code degatParTour}).</li>
- *   <li>Taille de la zone affectee (doit être impaire pour qu’un centre existe).</li>
- *   <li>Duree de vie du nuage en nombre de tours ({@code duree}).</li>
+ * <li>Degâts infliges par tour ({@code degatParTour}).</li>
+ * <li>Taille de la zone affectee (doit être impaire pour qu’un centre
+ * existe).</li>
+ * <li>Duree de vie du nuage en nombre de tours ({@code duree}).</li>
  * </ul>
  *
  * @author
@@ -27,19 +29,25 @@ import java.util.*;
 public class NuageToxique extends Objet implements Deplacable, Combattant, Analyze {
 
     // ===================== ATTRIBUTS =====================
-
-    /** Degâts infliges par tour aux creatures presentes dans la zone du nuage. */
+    /**
+     * Degâts infliges par tour aux creatures presentes dans la zone du nuage.
+     */
     private int degatParTour;
 
-    /** Taille du nuage (zone carree taille × taille). */
+    /**
+     * Taille du nuage (zone carree taille × taille).
+     */
     private int taille;
 
-    /** Duree de vie restante (en tours). */
+    /**
+     * Duree de vie restante (en tours).
+     */
     private int duree;
 
     // ===================== CONSTRUCTEURS =====================
-
-    /** Constructeur par defaut. */
+    /**
+     * Constructeur par defaut.
+     */
     public NuageToxique() {
         super();
         this.degatParTour = 5;
@@ -47,7 +55,9 @@ public class NuageToxique extends Objet implements Deplacable, Combattant, Analy
         this.duree = 8;
     }
 
-    /** Constructeur complet. */
+    /**
+     * Constructeur complet.
+     */
     public NuageToxique(String nom, String description, Point2D p, int degat, int taille, int duree) {
         super(nom, description, p);
         this.degatParTour = degat;
@@ -55,7 +65,9 @@ public class NuageToxique extends Objet implements Deplacable, Combattant, Analy
         this.duree = duree;
     }
 
-    /** Constructeur par copie. */
+    /**
+     * Constructeur par copie.
+     */
     public NuageToxique(NuageToxique autreNuage) {
         super(autreNuage);
         this.degatParTour = autreNuage.degatParTour;
@@ -64,7 +76,6 @@ public class NuageToxique extends Objet implements Deplacable, Combattant, Analy
     }
 
     // ===================== GETTERS / SETTERS =====================
-
     public int getDegatParTour() {
         return degatParTour;
     }
@@ -90,18 +101,25 @@ public class NuageToxique extends Objet implements Deplacable, Combattant, Analy
     }
 
     // ===================== MeCANIQUES DE JEU =====================
-
-    /** Reduit la duree du nuage d’un tour. */
+    /**
+     * Reduit la duree du nuage d’un tour.
+     */
     public void decrementerDuree() {
-        if (this.duree > 0) this.duree--;
+        if (this.duree > 0) {
+            this.duree--;
+        }
     }
 
-    /** Indique si le nuage est encore actif. */
+    /**
+     * Indique si le nuage est encore actif.
+     */
     public boolean estActif() {
         return this.duree > 0;
     }
 
-    /** Deplace le centre du nuage. */
+    /**
+     * Deplace le centre du nuage.
+     */
     @Override
     public void deplacer(int dx, int dy) {
         this.pos.translate(dx, dy);
@@ -119,14 +137,18 @@ public class NuageToxique extends Objet implements Deplacable, Combattant, Analy
         for (int essais = 0; essais < MAX_ESSAIS; essais++) {
             int dx = rand.nextInt(3) - 1;
             int dy = rand.nextInt(3) - 1;
-            if (dx == 0 && dy == 0) continue;
+            if (dx == 0 && dy == 0) {
+                continue;
+            }
 
             int nx = anciennePos.getX() + dx;
             int ny = anciennePos.getY() + dy;
             Point2D nouvellePos = new Point2D(nx, ny);
 
             boolean dansMonde = nx >= 0 && nx < tailleMonde && ny >= 0 && ny < tailleMonde;
-            if (!dansMonde) continue;
+            if (!dansMonde) {
+                continue;
+            }
 
             boolean occupee = positionsOccupees.stream().anyMatch(p -> p.equals(nouvellePos));
             if (!occupee) {
@@ -140,55 +162,67 @@ public class NuageToxique extends Objet implements Deplacable, Combattant, Analy
     }
 
     /**
-     * Inflige des degâts à une creature si elle se trouve dans la zone d’effet du nuage.
+     * Inflige des degâts à une creature si elle se trouve dans la zone d’effet
+     * du nuage.
      */
     @Override
     public void combattre(Creature c, Set<Point2D> positionWorld, List<Creature> creatures) {
-        if (!this.estActif()) return;
-
-        int demiTaille = taille / 2;
-        int xMin = this.pos.getX() - demiTaille;
-        int xMax = this.pos.getX() + demiTaille;
-        int yMin = this.pos.getY() - demiTaille;
-        int yMax = this.pos.getY() + demiTaille;
-
-        int xC = c.getPos().getX();
-        int yC = c.getPos().getY();
-
-        if (c.isEtat() && xC >= xMin && xC <= xMax && yC >= yMin && yC <= yMax) {
-            System.out.println("Le nuage toxique \"" + this.getNom() + "\" affecte " + c.getNom() + " !");
-            System.out.println("Degâts infliges : " + degatParTour);
-
-            c.setPtVie(c.getPtVie() - degatParTour);
-            if (c.getPtVie() <= 0) {
-                System.out.println("" + c.getNom() + " a succombe au nuage toxique !");
-                c.mourir(positionWorld, creatures);
-            } else {
-                System.out.println("Il reste " + c.getPtVie() + " PV à " + c.getNom() + ".");
-            }
+        if (!this.estActif()) {
+            return;
         }
+        System.out.println(c.getNom());
+        System.out.println("Le nuage toxique \"" + this.getNom() + "\" affecte " + c.getNom() + " !");
+        System.out.println("Degats infliges : " + degatParTour);
+
+        c.setPtVie(c.getPtVie() - degatParTour);
+        if (c.getPtVie() <= 0) {
+            System.out.println("" + c.getNom() + " a succombe au nuage toxique !");
+            c.mourir(positionWorld, creatures);
+        } else {
+            System.out.println("Il reste " + c.getPtVie() + " PV a " + c.getNom() + ".");
+        }
+
     }
 
     /**
-     * Comportement automatique du nuage à chaque tour (appele par World.analyzer()).
+     * Comportement automatique du nuage à chaque tour (appele par
+     * World.analyzer()).
+     *
+     * @param positionWorld
      */
+    @Override
     public void analyzer(Set<Point2D> positionWorld, List<Creature> creatures, List<Objet> objets, int tailleMonde) {
-        if (!this.estActif()) return;
+        if (!this.estActif()) {
+            return;
+        }
 
-        // Deplacement aleatoire leger
+        // Déplacement aléatoire léger
         this.deplacementAleatoire(positionWorld, tailleMonde);
 
-        // Affecter toutes les creatures dans la zone
+        // Créer une liste temporaire des créatures présentes dans la zone du nuage
+        List<Creature> creaturesDansZone = new ArrayList<>();
+
         for (Creature c : creatures) {
+            // Comparer la position de la créature avec la position du nuage
+            double distanceX = Math.abs(c.getPos().getX() - this.getPos().getX());
+            double distanceY = Math.abs(c.getPos().getY() - this.getPos().getY());
+
+            // Si la créature est dans la zone du nuage (taille × taille)
+            if (distanceX <= this.taille && distanceY <= this.taille) {
+                creaturesDansZone.add(c);
+            }
+        }
+
+        // Exécuter le combat sur les créatures présentes dans la zone
+        for (Creature c : creaturesDansZone) {
             this.combattre(c, positionWorld, creatures);
         }
 
-        // Diminuer la duree de vie du nuage
+        // Diminuer la durée de vie du nuage
         this.decrementerDuree();
     }
 
     // ===================== SAUVEGARDE SQL =====================
-
     /**
      * Enregistre le nuage toxique dans la base de donnees.
      */
