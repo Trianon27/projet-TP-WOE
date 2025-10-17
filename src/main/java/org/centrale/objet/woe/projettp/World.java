@@ -3,21 +3,32 @@ package org.centrale.objet.woe.projettp;
 import java.util.*;
 import java.sql.*;
 
+
 /**
- * represente le monde du jeu WoE avec ses personnages, creatures et objets.
+ * Représente le monde du jeu <b>World of ECN (WoE)</b>.
  * <p>
- * Cette classe permet de :
+ * Cette classe constitue le cœur de la simulation. Elle gère la création, la
+ * génération aléatoire, l'affichage, la sauvegarde et la restauration du monde
+ * dans une base de données PostgreSQL. Le monde contient toutes les entités
+ * (créatures, personnages, objets) et orchestre les tours de jeu.
+ * </p>
+ *
+ * <h3>Fonctionnalités principales :</h3>
  * <ul>
- * <li>Creer un monde aleatoire avec des positions uniques pour chaque
- * entite.</li>
- * <li>Generer des personnages, monstres et objets aleatoirement.</li>
- * <li>Afficher l’etat du monde et ses protagonistes.</li>
- * <li>Analyser et simuler les tours du jeu.</li>
- * <li>Sauvegarder l’etat complet du monde dans une base PostgreSQL.</li>
+ *     <li>Création et génération d’un monde aléatoire (créatures, objets)</li>
+ *     <li>Gestion des positions et collisions des entités</li>
+ *     <li>Simulation des tours du jeu (joueur + IA des PNJ)</li>
+ *     <li>Affichage du monde et de la vision du héros</li>
+ *     <li>Sauvegarde et chargement complets depuis PostgreSQL</li>
  * </ul>
  *
- * @author
- * @version 3.0 (fusion IA + BDD)
+ * <p>
+ * Le monde est carré (TAILLE_MONDE × TAILLE_MONDE). Chaque entité
+ * ({@link ElementDeJeu}) possède une position unique dans le monde.
+ * </p>
+ *
+ * @author haytam
+ * @version 5.0 
  */
 public class World {
 
@@ -522,9 +533,8 @@ public class World {
      * Recharge le monde complet depuis la base PostgreSQL pour une partie
      * donnée (idPartie).
      *
-     * Restaure : - Toutes les créatures sauf le héros du joueur - Tous les
-     * objets (hors inventaire) - Le contenu de l’inventaire (nourritures
-     * uniquement)
+     * Restaure : - Toutes les créatures sans duplicatas - Tous les
+     * objets (hors inventaire) - Le contenu de l’inventaire
      */
     public void loadWorldFromDB(Connection conn, int idPartie, Joueur joueur) {
         this.ListCreature.clear();

@@ -156,7 +156,31 @@ public class Guerrier extends Personnage implements Combattant {
         return n.nextInt(100) < c.getPagePar();
     }
     
-    
+    /**
+    * Sauvegarde les informations spécifiques à un {@link Guerrier}
+    * dans la table SQL correspondante.
+    * <p>
+    * Cette méthode complète la sauvegarde générique du personnage effectuée
+    * dans {@code Personnage}, en insérant l’identifiant du personnage
+    * dans la table spécialisée <b>Guerrier</b>.  
+    * Elle ne stocke pas d’attribut supplémentaire (les caractéristiques
+    * communes sont déjà enregistrées dans {@code Personnage}).
+    * </p>
+    *
+    * <h4>Schéma visé :</h4>
+    * <pre>
+    * Table : Guerrier
+    * Colonnes : id_personnage (PRIMARY KEY, FOREIGN KEY vers Personnage)
+    * </pre>
+    *
+    * @param conn          Connexion SQL active (vers la base PostgreSQL)
+    * @param idPersonnage  Identifiant du personnage à associer au Guerrier
+    *
+    * @throws SQLException en cas d’erreur d’exécution SQL
+    *
+    * @see Personnage#saveToDB(Connection, int)
+    * @see World#saveWorldToDB(Connection, Joueur, String, int, int)
+    */
     
     public void saveGuerrier(Connection conn, int idPersonnage) {
         try (PreparedStatement ps = conn.prepareStatement(

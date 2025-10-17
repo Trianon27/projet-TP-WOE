@@ -6,23 +6,24 @@ import java.sql.SQLException;
 import java.util.*;
 
 /**
- * Classe {@code Joueur} representant un joueur humain dans le monde WoE.
+ * Représente un joueur humain dans le monde du jeu <b>World of ECN (WoE)</b>.
  * <p>
- * Le joueur contrôle un {@link Personnage} jouable (heros) et peut interagir
- * avec le monde à travers plusieurs actions :
+ * Le joueur contrôle un {@link Personnage} jouable (héros) et interagit avec le monde
+ * à travers diverses actions : déplacement, attaque, interaction, utilisation d'objets
+ * ou sauvegarde de la partie.
  * </p>
  *
+ * <h3>Fonctionnalités principales :</h3>
  * <ul>
- * <li>Sauvegarder la partie (en base PostgreSQL)</li>
- * <li>Se deplacer (8 directions possibles)</li>
- * <li>Attaquer des creatures adjacentes</li>
- * <li>Interagir avec des objets du monde</li>
- * <li>Utiliser un objet de l'inventaire</li>
- * <li>Ou ne rien faire</li>
+ *     <li>Contrôle du héros dans un monde peuplé de créatures et d'objets</li>
+ *     <li>Gestion des interactions et de l'inventaire (nourritures uniquement)</li>
+ *     <li>Communication avec la base PostgreSQL pour sauvegarder/restaurer une partie</li>
+ *     <li>Support d’une touche rapide <b>“f”</b> pour quitter le jeu à tout moment
+ *         (avec proposition de sauvegarde avant sortie)</li>
  * </ul>
  *
- * @author Fusion
- * @version 5.0 (fusion analyse + sauvegarde dynamique)
+ * @author haytam
+ * @version 5.0 
  */
 public class Joueur implements Analyze {
 
@@ -84,9 +85,28 @@ public class Joueur implements Analyze {
     }
 
     
+
     /**
-     * Variante de analyzer pour le mode connecté à la base.
-     * → Ajout touche "f" pour quitter à tout moment, avec option de sauvegarde.
+     * Gère le tour du joueur dans le monde connecté à la base de données.
+     * <p>
+     * Le joueur peut à chaque tour :
+     * <ul>
+     *   <li>Sauvegarder la partie</li>
+     *   <li>Se déplacer sur la carte</li>
+     *   <li>Attaquer une créature adjacente</li>
+     *   <li>Interagir avec un objet au sol</li>
+     *   <li>Utiliser un objet de son inventaire</li>
+     *   <li>Ne rien faire</li>
+     * </ul>
+     * Une touche rapide <b>“f”</b> permet de quitter le jeu à tout moment,
+     * en demandant si le joueur souhaite sauvegarder avant la fermeture.
+     * </p>
+     *
+     * @param positionWorld Ensemble des positions occupées dans le monde
+     * @param creatures      Liste des créatures présentes
+     * @param objets         Liste des objets présents
+     * @param world          Monde courant
+     * @param conn           Connexion SQL active (PostgreSQL)
      */
     public void analyzer(Set<Point2D> positionWorld, List<Creature> creatures,
                          List<Objet> objets, World world, Connection conn) {
@@ -461,6 +481,19 @@ public class Joueur implements Analyze {
     }
 
     // ===================== SAUVEGARDE JOUEUR =====================
+    
+    /**
+     * Sauvegarde le joueur dans la base PostgreSQL.
+     * <p>
+     * Cette méthode crée une entrée dans la table {@code Joueur}, liant le
+     * joueur à son personnage (héros). Elle est généralement appelée lors
+     * de la sauvegarde complète du monde ({@link World#saveWorldToDB}).
+     * </p>
+     *
+     * @param conn         Connexion SQL active
+     * @param idPersonnage Identifiant du personnage héros déjà sauvegardé
+     */
+    
     public void saveToDB(Connection conn, int idPersonnage) {
         String sql = "INSERT INTO Joueur (pseudo, id_personnage) VALUES (?, ?) RETURNING id_joueur";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -472,7 +505,21 @@ public class Joueur implements Analyze {
         }
     }
     
-    
+    /**
+     * Charge une partie complète depuis la base PostgreSQL.
+     * <p>
+     * Cette méthode :
+     * <ul>
+     *   <li>Charge les informations du héros (type, position, statistiques)</li>
+     *   <li>Restaure les créatures et objets du monde via {@link World#loadWorldFromDB}</li>
+     *   <li>Recharge l’inventaire du héros (nourritures uniquement)</li>
+     *   <li>Relance la boucle de jeu à partir du tour sauvegardé</li>
+     * </ul>
+     * </p>
+     *
+     * @param conn  Connexion SQL active
+     * @param world Monde à restaurer
+     */
     public void chargerPartieDepuisDebut(Connection conn, World world) {
         Scanner sc = new Scanner(System.in);
         System.out.println("=== 🔄 Chargement d'une partie sauvegardée ===");

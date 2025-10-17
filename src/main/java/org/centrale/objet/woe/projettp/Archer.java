@@ -223,7 +223,29 @@ public class Archer extends Personnage implements Combattant {
         super.affiche();
         System.out.println("Le nbr de fleches : " + this.nbFleches);
     }
-
+    /**
+    * Sauvegarde les informations spécifiques à un {@link Archer}
+    * dans la table SQL correspondante.
+    * <p>
+    * Comme pour {@link Guerrier}, cette méthode lie simplement
+    * l'identifiant du personnage déjà sauvegardé dans {@code Personnage}
+    * à une ligne de la table <b>Archer</b>.
+    * </p>
+    *
+    * <h4>Schéma visé :</h4>
+    * <pre>
+    * Table : Archer
+    * Colonnes : id_personnage (PRIMARY KEY, FOREIGN KEY vers Personnage)
+    * </pre>
+    *
+    * @param conn          Connexion SQL active (vers la base PostgreSQL)
+    * @param idPersonnage  Identifiant du personnage à associer à l’Archer
+    *
+    * @throws SQLException en cas d’erreur d’exécution SQL
+    *
+    * @see Personnage#saveToDB(Connection, int)
+    * @see World#saveWorldToDB(Connection, Joueur, String, int, int)
+    */
     public void saveArcher(Connection conn, int idPersonnage) {
         try (PreparedStatement ps = conn.prepareStatement(
             "INSERT INTO Archer (id_personnage, nbFleches) VALUES (?, ?)")) {

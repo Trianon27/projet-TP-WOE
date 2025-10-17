@@ -35,7 +35,7 @@ public class TestWoE {
             System.err.println("❌ Impossible de demarrer le jeu : connexion base echouee.");
             return;
         }
-        System.out.println("✅ Connexion reussie a la base de donnees !");
+        System.out.println("Connexion reussie a la base de donnees !");
 
         // ======================================================
         // 2️⃣ Menu principal : Charger ou Nouvelle partie

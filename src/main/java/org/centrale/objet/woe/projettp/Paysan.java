@@ -53,7 +53,30 @@ public class Paysan extends Personnage {
         super();
     }
     
-    
+    /**
+    * Sauvegarde les informations spécifiques à un {@link Paysan}
+    * dans la table SQL correspondante.
+    * <p>
+    * Le paysan ne possède pas de propriétés distinctes nécessitant
+    * un enregistrement supplémentaire.  
+    * Cette méthode insère donc uniquement la clé étrangère
+    * vers {@code Personnage} dans la table <b>Paysan</b>.
+    * </p>
+    *
+    * <h4>Schéma visé :</h4>
+    * <pre>
+    * Table : Paysan
+    * Colonnes : id_personnage (PRIMARY KEY, FOREIGN KEY vers Personnage)
+    * </pre>
+    *
+    * @param conn          Connexion SQL active (vers la base PostgreSQL)
+    * @param idPersonnage  Identifiant du personnage à associer au Paysan
+    *
+    * @throws SQLException en cas d’erreur d’exécution SQL
+    *
+    * @see Personnage#saveToDB(Connection, int)
+    * @see World#saveWorldToDB(Connection, Joueur, String, int, int)
+    */
 
     public void savePaysan(Connection conn, int idPersonnage) {
         try (PreparedStatement ps = conn.prepareStatement(
